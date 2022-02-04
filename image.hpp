@@ -6,15 +6,17 @@
 #include <vector>
 #include "CImg.h"
 
-struct coord {
+struct point
+{
     int x;
     int y;
 };
 
-struct pixel {
-    unsigned char r;
-    unsigned char g;
-    unsigned char b;
+struct pixel
+{
+    float r;
+    float g;
+    float b;
 };
 
 
@@ -36,43 +38,30 @@ public:
      * @details Le vecteur est sous la sorte [[x,y],[x,y],...]
      * @return bool
      */
-    [[nodiscard]] bool isVectorValid(std::vector<coord > vec) const;
+    [[nodiscard]] bool isVectorValid(std::vector<point> vec) const;
 
-    [[nodiscard]] std::vector<coord> getVectorFromBresenhamV1(int x1, int y1, int x2, int y2) const;
+    [[nodiscard]] std::vector<point> getVectorFromBresenham(point p1, point p2) const;
 
-    [[nodiscard]] std::vector<coord > aStart(int x1, int y1, int x2, int y2) const;
+    [[nodiscard]] std::vector<point> aStart(point p1, point p2) const;
 
-    [[nodiscard]] std::vector<float> getPixelColors(int x, int y) const
+    [[nodiscard]] pixel getPixelColors(point p) const
     {
-        std::vector<float> colors;
-        colors.push_back(image(x, y, 0, 0));
-        colors.push_back(image(x, y, 0, 1));
-        colors.push_back(image(x, y, 0, 2));
-        return colors;
+        return pixel{image(p.x, p.y, 0), image(p.x, p.y, 1), image(p.x, p.y, 2)};
     }
 
-    [[nodiscard]] std::vector<float> getPixelColors(std::vector<int> vec) const
+    [[nodiscard]] float getPixelRed(point p) const
     {
-        std::vector<float> colors;
-        colors.push_back(image(vec[0], vec[1], 0, 0));
-        colors.push_back(image(vec[0], vec[1], 0, 1));
-        colors.push_back(image(vec[0], vec[1], 0, 2));
-        return colors;
+        return this->image(p.x, p.y, 0, 0);
     }
 
-    [[nodiscard]] float getPixelRed(int x, int y) const
+    [[nodiscard]] float getPixelGreen(point p) const
     {
-        return this->image(x, y, 0, 0);
+        return this->image(p.x, p.y, 0, 1);
     }
 
-    [[nodiscard]] float getPixelGreen(int x, int y) const
+    [[nodiscard]] float getPixelBlue(point p) const
     {
-        return this->image(x, y, 0, 1);
-    }
-
-    [[nodiscard]] float getPixelBlue(int x, int y) const
-    {
-        return this->image(x, y, 0, 2);
+        return this->image(p.x, p.y, 0, 2);
     }
 
     [[nodiscard]] int getWidth() const
