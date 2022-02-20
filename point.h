@@ -1,5 +1,5 @@
-#ifndef BARJOKART_POINT_HPP
-#define BARJOKART_POINT_HPP
+#ifndef BARJOKART_POINT_H
+#define BARJOKART_POINT_H
 
 class Point {
 public:
@@ -39,4 +39,4 @@ public:
     int &operator[](const int &o) { return o == 0 ? x : y; }
 };
 
-#endif //BARJOKART_POINT_HPP
+#endif //BARJOKART_POINT_H

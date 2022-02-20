@@ -1,6 +1,6 @@
 #include "CImg.h"
 #include <iostream>
-#include "image.hpp"
+#include "image.h"
 
 using namespace cimg_library;
 

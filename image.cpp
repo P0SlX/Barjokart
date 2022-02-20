@@ -1,4 +1,4 @@
-#include "image.hpp"
+#include "image.h"
 
 Image::Image(std::string path) {
     this->path = path;

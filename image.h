@@ -1,12 +1,12 @@
-#ifndef BARJOKART_IMAGE_HPP
-#define BARJOKART_IMAGE_HPP
+#ifndef BARJOKART_IMAGE_H
+#define BARJOKART_IMAGE_H
 
 
 #include <string>
 #include <vector>
 #include "CImg.h"
 #include "pixel.h"
-#include "point.hpp"
+#include "point.h"
 
 
 class Image {
@@ -41,4 +41,4 @@ public:
 };
 
 
-#endif //BARJOKART_IMAGE_HPP
+#endif //BARJOKART_IMAGE_H
