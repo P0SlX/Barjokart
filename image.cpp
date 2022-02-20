@@ -1,27 +1,28 @@
 #include "image.hpp"
 
-Image::Image(std::string path)
-{
+Image::Image(std::string path) {
     this->path = path;
     this->image = cimg_library::CImg<float>(path.c_str());
     this->width = this->image.width();
     this->height = this->image.height();
 }
 
-Image::~Image()
-{
+Image::~Image() {
     this->image.~CImg<float>();
 }
 
-bool Image::isVectorValid(std::vector<point> vec) const
-{
+bool Image::isVectorValid(std::vector<Point> &vec) const {
     // Sanity check
     if (vec.empty())
         return false;
 
-    for (auto &coordVec: vec)
-    {
-        pixel pixelColors = this->getPixelColors(coordVec);
+    for (auto &coordVec: vec) {
+        // Check if the point coords are valid
+        if (coordVec.x < 0 || coordVec.x >= this->width ||
+            coordVec.y < 0 || coordVec.y >= this->height)
+            return false;
+
+        Pixel pixelColors = this->getPixelColors(coordVec);
 
         if (pixelColors.r == 0 && pixelColors.g == 0 && pixelColors.b == 0)
             return false;
@@ -29,25 +30,29 @@ bool Image::isVectorValid(std::vector<point> vec) const
     return true;
 }
 
-std::vector<point > Image::getVectorFromBresenham(point p1, point p2) const
-{
-    std::vector<point > vec;
+std::vector<Point> Image::getVectorFromBresenham(Point &p1, Point &p2) const {
+    // Check if points are valid
+    if (p1.x < 0 || p1.x >= this->width ||
+        p1.y < 0 || p1.y >= this->height ||
+        p2.x < 0 || p2.x >= this->width ||
+        p2.y < 0 || p2.y >= this->height)
+        return {};
+
+    std::vector<Point> vec;
     const bool steep = (std::abs(p2.y - p1.y) > std::abs(p2.x - p1.x));
 
-    if (steep)
-    {
+    if (steep) {
         std::swap(p1.x, p1.y);
         std::swap(p2.x, p2.y);
     }
 
-    if (p1.x > p2.x)
-    {
+    if (p1.x > p2.x) {
         std::swap(p1.x, p2.x);
         std::swap(p1.y, p2.y);
     }
 
-    const float dx = p2.x - p1.x;
-    const float dy = std::abs(p2.y - p1.y);
+    const float dx = (float) p2.x - (float) p1.x;
+    const float dy = std::abs((float) p2.y - (float) p1.y);
 
     float err = dx / 2.0f;
     const int ystep = (p1.y < p2.y) ? 1 : -1;
@@ -55,16 +60,14 @@ std::vector<point > Image::getVectorFromBresenham(point p1, point p2) const
 
     const int maxX = p2.x;
 
-    for (int x = p1.x; x < maxX; ++x)
-    {
+    for (int x = p1.x; x < maxX; ++x) {
         if (steep)
-            vec.push_back(point{y, x});
+            vec.emplace_back(y, x);
         else
-            vec.push_back(point{x, y});
+            vec.emplace_back(x, y);
 
         err -= dy;
-        if (err < 0)
-        {
+        if (err < 0) {
             y += ystep;
             err += dx;
         }
@@ -72,9 +75,9 @@ std::vector<point > Image::getVectorFromBresenham(point p1, point p2) const
     return vec;
 }
 
-std::vector<point> Image::aStart(point p1, point p2) const {
+std::vector<Point> Image::aStar(Point &p1, Point &p2) const {
     // A* algorithm
-    std::vector<point> vec;
+    std::vector<Point> vec;
 }
 
 

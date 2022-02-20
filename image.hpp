@@ -5,83 +5,38 @@
 #include <string>
 #include <vector>
 #include "CImg.h"
-
-struct point
-{
-    int x;
-    int y;
-};
-
-struct pixel
-{
-    float r;
-    float g;
-    float b;
-};
+#include "pixel.h"
+#include "point.hpp"
 
 
-class Image
-{
-private:
-    int width;
-    int height;
+class Image {
+public:
+    int width, height;
     cimg_library::CImg<float> image;
     std::string path;
 
-public:
     explicit Image(std::string path);
 
     ~Image();
 
     /**
      * @details Check si le vecteur de pixels est valide (s'il n'y a aucun pixel noir)
-     * @details Le vecteur est sous la sorte [[x,y],[x,y],...]
+     * @details Le vecteur est de la sorte [[x,y],[x,y],...]
      * @return bool
      */
-    [[nodiscard]] bool isVectorValid(std::vector<point> vec) const;
+    bool isVectorValid(std::vector<Point> &vec) const;
 
-    [[nodiscard]] std::vector<point> getVectorFromBresenham(point p1, point p2) const;
+    /**
+     * @details Retourne un vecteur de pixels entre deux points
+     * @details Les deux points doivent être valides
+     * @return std::vector<Point>
+     */
+    std::vector<Point> getVectorFromBresenham(Point &p1, Point &p2) const;
 
-    [[nodiscard]] std::vector<point> aStart(point p1, point p2) const;
+    std::vector<Point> aStar(Point &p1, Point &p2) const;
 
-    [[nodiscard]] pixel getPixelColors(point p) const
-    {
-        return pixel{image(p.x, p.y, 0), image(p.x, p.y, 1), image(p.x, p.y, 2)};
-    }
-
-    [[nodiscard]] float getPixelRed(point p) const
-    {
-        return this->image(p.x, p.y, 0, 0);
-    }
-
-    [[nodiscard]] float getPixelGreen(point p) const
-    {
-        return this->image(p.x, p.y, 0, 1);
-    }
-
-    [[nodiscard]] float getPixelBlue(point p) const
-    {
-        return this->image(p.x, p.y, 0, 2);
-    }
-
-    [[nodiscard]] int getWidth() const
-    {
-        return width;
-    }
-
-    [[nodiscard]] int getHeight() const
-    {
-        return height;
-    }
-
-    [[nodiscard]] std::string getPath() const
-    {
-        return path;
-    }
-
-    cimg_library::CImg<float> getImage()
-    {
-        return image;
+    Pixel getPixelColors(Point &p) const {
+        return Pixel{(int) image(p.x, p.y, 0), (int) image(p.x, p.y, 1), (int) image(p.x, p.y, 2)};
     }
 };
 

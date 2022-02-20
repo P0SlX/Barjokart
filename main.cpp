@@ -10,6 +10,6 @@ int main()
     std::vector<int> start_coords = {89, 92};
     std::vector<int> end_color = {255, 0, 0};
 
-    cimg_library::CImgDisplay display(image->getImage());
+    cimg_library::CImgDisplay display(image->image);
     std::cin.ignore();
 }
