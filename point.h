@@ -4,39 +4,64 @@
 class Point {
 public:
     int x, y;
+    int r, g, b;
 
-    explicit Point(int a = 0, int b = 0) {
-        x = a;
-        y = b;
+    explicit Point(int x = 0, int y = 0, int r = 0, int g = 0, int b = 0) {
+        this->x = x;
+        this->y = y;
+        this->r = r;
+        this->g = g;
+        this->b = b;
     }
 
-    bool operator==(const Point &o) const { return o.x == x && o.y == y; }
+    friend std::ostream &operator<<(std::ostream &os, const Point &point) {
+        os << "(" << point.x << ", " << point.y << ", [" << point.r << ", " << point.g << ", " << point.b << "])";
+        return os;
+    }
 
-    Point operator+(const Point &o) const { return Point{o.x + x, o.y + y}; }
+    [[nodiscard]] bool isWall() const {
+        return r == 0 && g == 0 && b == 0;
+    }
 
-    Point operator-(const Point &o) const { return Point{x - o.x, y - o.y}; }
+    Point operator+(const Point &p) const {
+        return Point(x + p.x, y + p.y);
+    }
 
-    Point operator*(const int &o) const { return Point{x * o, y * o}; }
+    Point operator-(const Point &p) const {
+        return Point(x - p.x, y - p.y);
+    }
 
-    Point operator/(const int &o) const { return Point{x / o, y / o}; }
+    Point operator*(const int &i) const {
+        return Point(x * i, y * i);
+    }
 
-    Point operator%(const int &o) const { return Point{x % o, y % o}; }
+    Point operator/(const int &i) const {
+        return Point(x / i, y / i);
+    }
 
-    Point operator+=(const Point &o) { return *this = *this + o; }
+    bool operator==(const Point &p) const {
+        return x == p.x && y == p.y;
+    }
 
-    Point operator-=(const Point &o) { return *this = *this - o; }
+    bool operator!=(const Point &p) const {
+        return !(*this == p);
+    }
 
-    Point operator*=(const int &o) { return *this = *this * o; }
+    bool operator<(const Point &p) const {
+        return x < p.x && y < p.y;
+    }
 
-    Point operator/=(const int &o) { return *this = *this / o; }
+    bool operator>(const Point &p) const {
+        return x > p.x && y > p.y;
+    }
 
-    Point operator%=(const int &o) { return *this = *this % o; }
+    bool operator<=(const Point &p) const {
+        return x <= p.x && y <= p.y;
+    }
 
-    Point operator-() const { return Point{-x, -y}; }
-
-    int operator[](const int &o) const { return o == 0 ? x : y; }
-
-    int &operator[](const int &o) { return o == 0 ? x : y; }
+    bool operator>=(const Point &p) const {
+        return x >= p.x && y >= p.y;
+    }
 };
 
 #endif //BARJOKART_POINT_H

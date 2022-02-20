@@ -1,42 +1,49 @@
+#include <cassert>
 #include "image.h"
 
 Image::Image(std::string path) {
     this->path = path;
-    this->image = cimg_library::CImg<float>(path.c_str());
-    this->width = this->image.width();
-    this->height = this->image.height();
-}
+    this->imageObject = cimg_library::CImg<float>(path.c_str());
 
-Image::~Image() {
-    this->image.~CImg<float>();
+    // Fill the image matrix with the image data
+    for (auto y = 0; y < imageObject.height(); y++) {
+        std::vector<Point> row;
+        row.reserve(imageObject.width());
+        for (auto x = 0; x < imageObject.width(); x++) {
+            row.emplace_back(x, y,
+                             (int) imageObject(x, y, 0),
+                             (int) imageObject(x, y, 1),
+                             (int) imageObject(x, y, 2));
+        }
+        img.push_back(row);
+    }
+
+    this->width = this->imageObject.width();
+    this->height = this->imageObject.height();
 }
 
 bool Image::isVectorValid(std::vector<Point> &vec) const {
     // Sanity check
-    if (vec.empty())
-        return false;
+    assert(!vec.empty());
 
-    for (auto &coordVec: vec) {
+    for (auto &pt: vec) {
         // Check if the point coords are valid
-        if (coordVec.x < 0 || coordVec.x >= this->width ||
-            coordVec.y < 0 || coordVec.y >= this->height)
+        if (pt.x < 0 || pt.x >= this->width ||
+            pt.y < 0 || pt.y >= this->height)
             return false;
 
-        Pixel pixelColors = this->getPixelColors(coordVec);
-
-        if (pixelColors.r == 0 && pixelColors.g == 0 && pixelColors.b == 0)
+        if (pt.r == 0 && pt.g == 0 && pt.b == 0)
             return false;
     }
     return true;
 }
 
-std::vector<Point> Image::getVectorFromBresenham(Point &p1, Point &p2) const {
+std::vector<Point> Image::getVectorFromBresenham(Point p1, Point p2) const {
     // Check if points are valid
-    if (p1.x < 0 || p1.x >= this->width ||
-        p1.y < 0 || p1.y >= this->height ||
-        p2.x < 0 || p2.x >= this->width ||
-        p2.y < 0 || p2.y >= this->height)
-        return {};
+    assert(p1.x >= 0 && p1.x <= this->width &&
+           p1.y >= 0 && p1.y <= this->height &&
+           p2.x >= 0 && p2.x <= this->width &&
+           p2.y >= 0 && p2.y <= this->height);
 
     std::vector<Point> vec;
     const bool steep = (std::abs(p2.y - p1.y) > std::abs(p2.x - p1.x));
@@ -62,9 +69,9 @@ std::vector<Point> Image::getVectorFromBresenham(Point &p1, Point &p2) const {
 
     for (int x = p1.x; x < maxX; ++x) {
         if (steep)
-            vec.emplace_back(y, x);
+            vec.emplace_back(this->img[x][y]);
         else
-            vec.emplace_back(x, y);
+            vec.emplace_back(this->img[y][x]);
 
         err -= dy;
         if (err < 0) {
@@ -76,8 +83,32 @@ std::vector<Point> Image::getVectorFromBresenham(Point &p1, Point &p2) const {
 }
 
 std::vector<Point> Image::aStar(Point &p1, Point &p2) const {
-    // A* algorithm
-    std::vector<Point> vec;
+    std::vector<Point> solution;
 }
+
+void Image::print() const {
+    for (int j = 0; j < this->width; ++j) {
+        for (int i = 0; i < this->height; ++i) {
+            if (this->img[j][i].r == 0 && this->img[j][i].g == 0 && this->img[j][i].b == 0)
+                std::cout << "M";
+            else if (this->img[j][i].r == 255 && this->img[j][i].g == 255 && this->img[j][i].b == 255)
+                std::cout << " ";
+            else
+                std::cout << "/";
+        }
+        std::cout << std::endl;
+    }
+}
+
+Point Image::operator()(int x, int y) const {
+    assert(x >= 0 && x <= this->width && y >= 0 && y <= this->height);
+    return this->img[y][x];
+}
+
+Point &Image::operator()(int x, int y) {
+    assert(x >= 0 && x <= this->width && y >= 0 && y <= this->height);
+    return this->img[y][x];
+}
+
 
 
