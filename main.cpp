@@ -7,7 +7,7 @@ using namespace cimg_library;
 int main() {
 
     // Avec Cmake il faut faire ../ car c'est build dans cmake-build-debug et le png est à la racine
-    Image image = Image("../hills.png");
+    Image image = Image("hills.png");
 
     // Affichage de l'image
     image.print();

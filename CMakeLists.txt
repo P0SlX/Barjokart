@@ -11,3 +11,9 @@ include_directories(${X11_INCLUDE_DIR})
 find_package(Threads)
 add_executable(barjokart main.cpp CImg.h image.cpp image.h point.h)
 target_link_libraries(barjokart m ${CMAKE_THREAD_LIBS_INIT})
+
+add_custom_command(TARGET barjokart POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy
+        ${CMAKE_SOURCE_DIR}/hills.png
+        ${CMAKE_BINARY_DIR}/hills.png
+)
