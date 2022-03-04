@@ -3,7 +3,7 @@
 
 Image::Image(std::string path) {
     this->path = path;
-    this->imageObject = cimg_library::CImg<float>(path.c_str());
+    this->imageObject = cimg_library::CImg<unsigned char>(path.c_str());
 
     // Fill the image matrix with the image data
     for (auto y = 0; y < imageObject.height(); y++) {

@@ -12,7 +12,7 @@
 class Image {
 public:
     int width, height;
-    cimg_library::CImg<float> imageObject;
+    cimg_library::CImg<unsigned char> imageObject;
     std::string path;
     std::vector<std::vector<Point> > img;
 
