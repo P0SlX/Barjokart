@@ -25,7 +25,7 @@ int heuristic(Node *node, Node *goal) {
     return abs(node->x - goal->x) + abs(node->y - goal->y);
 }
 
-std::vector<Node *> get_neighbors(Node *node, Node *grid[10][10]) {
+std::vector<Node *> get_neighbors(Node *node, std::vector<std::vector<Node *> > &grid) {
     std::vector<Node *> neighbors;
     // get all 8 neighbors
     for (int i = -1; i <= 1; i++) {
@@ -43,7 +43,7 @@ std::vector<Node *> get_neighbors(Node *node, Node *grid[10][10]) {
     return neighbors;
 }
 
-std::vector<Node *> a_star(Node *grid[10][10], Node *start, Node *end) {
+std::vector<Node *> a_star(std::vector<std::vector<Node *> > &grid, Node *start, Node *end) {
     std::vector<Node *> closedList;
     std::priority_queue<Node *, std::vector<Node *>, decltype(&heuristic)> openList(&heuristic);
     openList.push(start);
@@ -84,18 +84,15 @@ std::vector<Node *> a_star(Node *grid[10][10], Node *start, Node *end) {
     return {};
 }
 
-void print_grid_path(Node *grid[10][10], std::vector<Node *> path) {
+void print_grid_path(std::vector<std::vector<Node *> > &grid, std::vector<Node *> path) {
     for (int i = 0; i < 10; i++) {
         for (int j = 0; j < 10; j++) {
-            if (std::find(path.begin(), path.end(), grid[i][j]) != path.end())
-                if (grid[i][j] == path[0])
-                    std::cout << "S";
-                else if (grid[i][j] == path[path.size() - 1])
-                    std::cout << "E";
-                else
-                    std::cout << "X";
-            else
-                std::cout << "*";
+            // if grid[i][j] is in path, print 'x'
+            if (std::find(path.begin(), path.end(), grid[i][j]) != path.end()) {
+                std::cout << "x";
+            } else {
+                std::cout << ".";
+            }
         }
         std::cout << std::endl;
     }

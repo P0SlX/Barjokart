@@ -1,26 +1,31 @@
 #include <vector>
-#include <iostream>
 #include "astar.h"
 
 int main() {
 
+    int HEIGHT = 10;
+    int WIDTH = 10;
+
     // Fake grid
-    Node *grid[10][10];
-    for (int i = 0; i < 10; i++) {
-        for (int j = 0; j < 10; j++) {
-            grid[i][j] = new Node(i, j, 0, 0, 0, nullptr);
+    std::vector<std::vector<Node*>> grid_vector;
+    for (int i = 0; i < HEIGHT; i++) {
+        std::vector<Node *> row;
+        row.reserve(WIDTH);
+        for (int j = 0; j < WIDTH; j++) {
+            row.emplace_back(new Node(i, j,0,0,0, nullptr));
         }
+        grid_vector.emplace_back(row);
     }
-    Node *startNode = grid[3][6];
-    Node *endNode = grid[9][9];
+    Node *startNode = grid_vector[3][6];
+    Node *endNode = grid_vector[9][9];
 
 
-    std::vector<Node *> oui = a_star(grid, startNode, endNode);
+    std::vector<Node *> oui = a_star(grid_vector, startNode, endNode);
 
-    print_grid_path(grid, oui);
+    print_grid_path(grid_vector, oui);
 
     // free grid
-    for (auto & i : grid) {
+    for (auto & i : grid_vector) {
         for (auto & j : i) {
             delete j;
         }

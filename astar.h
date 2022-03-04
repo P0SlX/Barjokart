@@ -18,11 +18,12 @@ std::vector<Node *> reconstruct_path(Node *pNode);
 
 int heuristic(Node *node, Node *goal);
 
-std::vector<Node *> get_neighbors(Node *node, Node *grid[10][10]);
+std::vector<Node *> get_neighbors(Node *node, std::vector<std::vector<Node *> > &grid);
 
-void print_grid_path(Node *grid[10][10], std::vector<Node *> path);
+void print_grid_path(std::vector<std::vector<Node *> > &grid, std::vector<Node *> path);
 
-std::vector<Node *> a_star(Node *grid[10][10], Node *start, Node *end);
+std::vector<Node *> a_star(std::vector<std::vector<Node *> > &grid, Node *start, Node *end);
+
 
 template<class ADAPTER>
 typename ADAPTER::container_type &get_container(ADAPTER &a);
