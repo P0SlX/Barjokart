@@ -41,7 +41,7 @@ bool AStar::isUnBlocked(const Pair &point) const {
 }
 
 double AStar::heuristic(const Pair &source) const {
-    return sqrt(pow((source.first - this->dest.first), 2.0) + pow((source.second - this->dest.second), 2.0));
+    return (abs(source.first - this->dest.first) + abs(source.second - this->dest.second));
 }
 
 void AStar::tracePath() {
@@ -85,6 +85,17 @@ void AStar::aStarSearch() {
         printf("Le point de destination n'est pas dans l'image\n");
         return;
     }
+
+    if (!isUnBlocked(this->src)) {
+        printf("Le point source est un obstacle\n");
+        return;
+    }
+
+    if (!isUnBlocked(this->dest)) {
+        printf("Le point de destination est un obstacle\n");
+        return;
+    }
+
 
     if (!isUnBlocked(this->src) || !isUnBlocked(this->dest)) {
         printf("Le point source et/ou destination est(sont) bloqué(s)\n");
