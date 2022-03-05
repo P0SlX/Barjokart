@@ -1,99 +1,152 @@
 #include "astar.h"
 
-template<class ADAPTER>
-typename ADAPTER::container_type &get_container(ADAPTER &a) {
-    struct hack : ADAPTER {
-        static typename ADAPTER::container_type &get(ADAPTER &a) {
-            return a.*&hack::c;
-        }
-    };
-    return hack::get(a);
-}
+AStar::AStar(Pair src, Pair dest, std::string filename) : src(std::move(src)), dest(std::move(dest)), filename(std::move(filename)) {
+    cimg_library::CImg<unsigned char> imageObject = cimg_library::CImg<unsigned char>(this->filename.c_str());
 
+    this->height = imageObject.height();
+    this->width = imageObject.width();
 
-std::vector<Node *> reconstruct_path(Node *pNode) {
-    std::vector<Node *> path;
-    while (pNode != nullptr) {
-        path.push_back(pNode);
-        pNode = pNode->parent;
+    // Initialize the map
+    this->grid.reserve(this->height);
+    for (int i = 0; i < this->height; i++) {
+        this->grid.emplace_back(this->width);
     }
-    std::reverse(path.begin(), path.end());
-    return path;
+
+    // Transforming the image into a grid of 0s and 1s
+    for (int i = 0; i < this->height; i++) {
+        for (int j = 0; j < this->width; j++) {
+            if (imageObject(j, i, 0) == 0 && imageObject(j, i, 1) == 0 && imageObject(j, i, 2) == 0) {
+                this->grid[j][i] = 0;
+            } else {
+                this->grid[j][i] = 1;
+            }
+        }
+    }
+
+    // Initialize the open list
+    this->nodeDetails.reserve(this->height);
+    for (int i = 0; i < this->height; i++) {
+        this->nodeDetails.emplace_back(this->width);
+    }
 }
 
-int heuristic(Node *node, Node *goal) {
-    return abs(node->x - goal->x) + abs(node->y - goal->y);
+bool AStar::isValid(const Pair &point) const {
+    if (this->height > 0 && this->width > 0)
+        return (point.second >= 0) && (point.second < this->height) && (point.first >= 0) && (point.first < this->width);
+    return false;
 }
 
-std::vector<Node *> get_neighbors(Node *node, std::vector<std::vector<Node *> > &grid) {
-    std::vector<Node *> neighbors;
-    // get all 8 neighbors
-    for (int i = -1; i <= 1; i++) {
-        for (int j = -1; j <= 1; j++) {
-            if (i == 0 && j == 0) {
+bool AStar::isUnBlocked(const Pair &point) const {
+    return isValid(point) && grid[point.first][point.second] == 1;
+}
+
+double AStar::heuristic(const Pair &source) const {
+    return sqrt(pow((source.first - this->dest.first), 2.0) + pow((source.second - this->dest.second), 2.0));
+}
+
+void AStar::tracePath() {
+    std::vector<Pair> path;
+
+    int i = this->dest.first, j = this->dest.second;
+    Pair next_node = this->nodeDetails[j][i].parent;
+    do {
+        path.push_back(next_node);
+        next_node = this->nodeDetails[j][i].parent;
+        i = next_node.first;
+        j = next_node.second;
+    } while (this->nodeDetails[j][i].parent != next_node);
+
+    path.emplace_back(i, j);
+    path.push_back(dest);
+
+    for (int k = 0; k < this->height; k++) {
+        for (int l = 0; l < this->width; l++) {
+            if (find(path.begin(), path.end(), Pair(l, k)) != path.end()) {
+                std::cout << "X ";
                 continue;
             }
-            int x = node->x + i;
-            int y = node->y + j;
-            if (x >= 0 && x < 10 && y >= 0 && y < 10) {
-                neighbors.push_back(grid[x][y]);
-            }
+            if (this->grid[l][k] == 1)
+                std::cout << "  ";
+            else
+                std::cout << "██";
         }
+        // \n pour pas flush le buffer et gagner du temps
+        std::cout << "\n";
     }
-    return neighbors;
 }
 
-std::vector<Node *> a_star(std::vector<std::vector<Node *> > &grid, Node *start, Node *end) {
-    std::vector<Node *> closedList;
-    std::priority_queue<Node *, std::vector<Node *>, decltype(&heuristic)> openList(&heuristic);
-    openList.push(start);
+void AStar::aStarSearch() {
+    if (!isValid(this->src)) {
+        printf("Le point source n'est pas dans l'image\n");
+        return;
+    }
+
+    if (!isValid(this->dest)) {
+        printf("Le point de destination n'est pas dans l'image\n");
+        return;
+    }
+
+    if (!isUnBlocked(this->src) || !isUnBlocked(this->dest)) {
+        printf("Le point source et/ou destination est(sont) bloqué(s)\n");
+        return;
+    }
+
+    if (this->src == this->dest) {
+        printf("Le point source est le même que celui de destination\n");
+        return;
+    }
+
+    bool closedList[this->height][this->width];
+    memset(closedList, false, sizeof(closedList));
+
+    int i, j;
+    i = src.first, j = src.second;
+    this->nodeDetails[j][i].f = 0.0;
+    this->nodeDetails[j][i].g = 0.0;
+    this->nodeDetails[j][i].h = 0.0;
+    this->nodeDetails[j][i].parent = {i, j};
+
+    std::priority_queue<Tuple, std::vector<Tuple>, std::greater<> > openList;
+
+    openList.emplace(0.0, j, i);
+
     while (!openList.empty()) {
-        Node *u = openList.top();
+        const Tuple &p = openList.top();
+        j = get<1>(p);
+        i = get<2>(p);
+
         openList.pop();
-        closedList.push_back(u);
+        closedList[j][i] = true;
 
-        // Arrivé
-        if (u->x == end->x && u->y == end->y) {
-            return reconstruct_path(u);
-        }
+        for (int add_x = -1; add_x <= 1; add_x++) {
+            for (int add_y = -1; add_y <= 1; add_y++) {
+                Pair neighbour(i + add_x, j + add_y);
+                if (isValid(neighbour)) {
+                    if (neighbour == dest) {
+                        this->nodeDetails[neighbour.second][neighbour.first].parent = {i, j};
+                        printf("Le point de destination à été atteint\n");
+                        tracePath();
+                        return;
+                    } else if (!closedList[neighbour.second][neighbour.first] && isUnBlocked(neighbour)) {
+                        double gNew = this->nodeDetails[j][i].g + 1.0;
+                        double hNew = heuristic(neighbour);
+                        double fNew = gNew + hNew;
 
-        std::vector<Node *> neighbors = get_neighbors(u, grid);
+                        if (this->nodeDetails[neighbour.second][neighbour.first].f == -1 ||
+                                this->nodeDetails[neighbour.second][neighbour.first].f > fNew) {
+                            openList.emplace(fNew, neighbour.second, neighbour.first);
 
-        for (auto v: neighbors) {
-            if (std::find(closedList.begin(), closedList.end(), v) != closedList.end()) {
-                continue;
-            }
-            v->cout = u->cout + 1;
-            v->heuristique = heuristic(v, end);
-            v->f = v->cout + v->heuristique;
-            v->parent = u;
-
-            if (std::find(get_container(openList).begin(), get_container(openList).end(), v) !=
-                get_container(openList).end()) {
-                if (v->f < get_container(openList).at(get_container(openList).size() - 1)->f) {
-                    get_container(openList).erase(
-                            std::remove(get_container(openList).begin(), get_container(openList).end(), v),
-                            get_container(openList).end());
-                    openList.push(v);
+                            this->nodeDetails[neighbour.second][neighbour.first].g = gNew;
+                            this->nodeDetails[neighbour.second][neighbour.first].h = hNew;
+                            this->nodeDetails[neighbour.second][neighbour.first].f = fNew;
+                            this->nodeDetails[neighbour.second][neighbour.first].parent = {i, j};
+                        }
+                    }
                 }
-            } else {
-                openList.push(v);
             }
         }
     }
-    return {};
+    printf("Impossible de trouver le chemin\n");
+
 }
 
-void print_grid_path(std::vector<std::vector<Node *> > &grid, std::vector<Node *> path) {
-    for (int i = 0; i < 10; i++) {
-        for (int j = 0; j < 10; j++) {
-            // if grid[i][j] is in path, print 'x'
-            if (std::find(path.begin(), path.end(), grid[i][j]) != path.end()) {
-                std::cout << "x";
-            } else {
-                std::cout << ".";
-            }
-        }
-        std::cout << std::endl;
-    }
-}

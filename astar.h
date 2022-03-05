@@ -1,32 +1,46 @@
 #ifndef BARJOKART_ASTAR_H
 #define BARJOKART_ASTAR_H
 
-#include <vector>
-#include <queue>
+#include <array>
+#include <cstring>
 #include <iostream>
+#include <queue>
+#include <set>
+#include <stack>
+#include <tuple>
+#include "CImg.h"
+
+typedef std::pair<int, int> Pair;
+typedef std::tuple<double, int, int> Tuple;
 
 struct Node {
-    int x, y, cout, heuristique, f;
-    Node *parent;
+    Pair parent;
+    double f, g, h;
 
-    Node(int x, int y, int cout, int heuristique, int f, Node *parent) : x(x), y(y), cout(cout),
-                                                                         heuristique(heuristique), f(f),
-                                                                         parent(parent) {}
+    Node() : parent(-1, -1), f(-1), g(-1), h(-1) {}
 };
 
-std::vector<Node *> reconstruct_path(Node *pNode);
+class AStar {
+private:
+    int width, height;
+    std::vector<std::vector<int> > grid;
+    std::vector<std::vector<Node> > nodeDetails;
+    const Pair src, dest;
+    const std::string filename;
 
-int heuristic(Node *node, Node *goal);
+public:
+    AStar(Pair start, Pair dest, std::string filename);
 
-std::vector<Node *> get_neighbors(Node *node, std::vector<std::vector<Node *> > &grid);
+    bool isValid(const Pair &point) const;
 
-void print_grid_path(std::vector<std::vector<Node *> > &grid, std::vector<Node *> path);
+    bool isUnBlocked(const Pair &point) const;
 
-std::vector<Node *> a_star(std::vector<std::vector<Node *> > &grid, Node *start, Node *end);
+    double heuristic(const Pair &source) const;
 
+    void tracePath();
 
-template<class ADAPTER>
-typename ADAPTER::container_type &get_container(ADAPTER &a);
+    void aStarSearch();
+};
 
 
 #endif //BARJOKART_ASTAR_H
