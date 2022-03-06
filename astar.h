@@ -28,6 +28,7 @@ private:
     const Pair src;
     std::vector<Pair> dest;
     const std::string filename;
+    cimg_library::CImg<unsigned char> imageObject;
 
 public:
     AStar(Pair &src, int dest[3], std::string &filename);

@@ -1,7 +1,7 @@
 #include "astar.h"
 
 AStar::AStar(Pair &src, int *dest, std::string &filename) : src(std::move(src)), filename(std::move(filename)) {
-    cimg_library::CImg<unsigned char> imageObject = cimg_library::CImg<unsigned char>(this->filename.c_str());
+    this->imageObject = cimg_library::CImg<unsigned char>(this->filename.c_str());
 
     this->height = imageObject.height();
     this->width = imageObject.width();
@@ -16,18 +16,21 @@ AStar::AStar(Pair &src, int *dest, std::string &filename) : src(std::move(src)),
     // And at the same time, storing the coordinates of the destinations points
     for (int i = 0; i < this->height; i++) {
         for (int j = 0; j < this->width; j++) {
-            // Chemin libre
-            if (imageObject(j, i, 0) == 255 && imageObject(j, i, 1) == 255 && imageObject(j, i, 2) == 255)
+            bool isFree = imageObject(j, i, 0) == 255 && imageObject(j, i, 1) == 255 && imageObject(j, i, 2) == 255;
+            bool isGreen = imageObject(j, i, 0) == 0 && imageObject(j, i, 1) == 255 && imageObject(j, i, 2) == 4;
+            bool isDest = imageObject(j, i, 0) == dest[0] && imageObject(j, i, 1) == dest[1] &&
+                          imageObject(j, i, 2) == dest[2];
+
+            // Chemin libre ou point de départ
+            if (isFree || isGreen)
                 this->grid[j][i] = 1;
-            else if (imageObject(j, i, 0) == dest[0] &&
-                     imageObject(j, i, 1) == dest[1] &&
-                     imageObject(j, i, 2) == dest[2]) {
-                // Destination
+
+            else if (isDest) {   // Destination
                 this->dest.emplace_back(j, i);
                 this->grid[j][i] = 1;
+
             } else
-                // Mur
-                this->grid[j][i] = 0;
+                this->grid[j][i] = 0;       // Mur
         }
     }
 
@@ -92,20 +95,12 @@ void AStar::tracePath(Pair &d) {
     path.emplace_back(i, j);
     path.push_back(d);
 
-    for (int k = 0; k < this->height; k++) {
-        for (int l = 0; l < this->width; l++) {
-            if (find(path.begin(), path.end(), Pair(l, k)) != path.end()) {
-                std::cout << "X ";
-                continue;
-            }
-            if (this->grid[l][k] == 1)
-                std::cout << "  ";
-            else
-                std::cout << "██";
-        }
-        // \n pour pas flush le buffer et gagner du temps
-        std::cout << "\n";
+    // save path on image
+    for (Pair p: path) {
+        const unsigned char color_mag[] = {0, 255, 0};
+        imageObject.draw_point(p.first, p.second, color_mag);
     }
+    imageObject.save("output.png");
 }
 
 void AStar::aStarSearch() {
