@@ -1,6 +1,6 @@
 #include "astar.h"
 
-AStar::AStar(Pair src, Pair dest, std::string filename) : src(std::move(src)), dest(std::move(dest)), filename(std::move(filename)) {
+AStar::AStar(Pair &src, int *dest, std::string &filename) : src(std::move(src)), filename(std::move(filename)) {
     cimg_library::CImg<unsigned char> imageObject = cimg_library::CImg<unsigned char>(this->filename.c_str());
 
     this->height = imageObject.height();
@@ -13,14 +13,39 @@ AStar::AStar(Pair src, Pair dest, std::string filename) : src(std::move(src)), d
     }
 
     // Transforming the image into a grid of 0s and 1s
+    // And at the same time, storing the coordinates of the destinations points
     for (int i = 0; i < this->height; i++) {
         for (int j = 0; j < this->width; j++) {
-            if (imageObject(j, i, 0) == 0 && imageObject(j, i, 1) == 0 && imageObject(j, i, 2) == 0) {
-                this->grid[j][i] = 0;
-            } else {
+            // Chemin libre
+            if (imageObject(j, i, 0) == 255 && imageObject(j, i, 1) == 255 && imageObject(j, i, 2) == 255)
                 this->grid[j][i] = 1;
-            }
+            else if (imageObject(j, i, 0) == dest[0] &&
+                     imageObject(j, i, 1) == dest[1] &&
+                     imageObject(j, i, 2) == dest[2]) {
+                // Destination
+                this->dest.emplace_back(j, i);
+                this->grid[j][i] = 1;
+            } else
+                // Mur
+                this->grid[j][i] = 0;
         }
+    }
+
+    // Display grid with finish points
+    std::cout << "Grille avec le(s) point(s) d'arrivée(s) : " << std::endl;
+    for (int k = 0; k < this->height; k++) {
+        for (int l = 0; l < this->width; l++) {
+            if (find(this->dest.begin(), this->dest.end(), Pair(l, k)) != this->dest.end()) {
+                std::cout << "X ";
+                continue;
+            }
+            if (this->grid[l][k] == 1)
+                std::cout << "  ";
+            else
+                std::cout << "██";
+        }
+        // \n pour pas flush le buffer et gagner du temps
+        std::cout << "\n";
     }
 
     // Initialize the open list
@@ -32,7 +57,8 @@ AStar::AStar(Pair src, Pair dest, std::string filename) : src(std::move(src)), d
 
 bool AStar::isValid(const Pair &point) const {
     if (this->height > 0 && this->width > 0)
-        return (point.second >= 0) && (point.second < this->height) && (point.first >= 0) && (point.first < this->width);
+        return (point.second >= 0) && (point.second < this->height) && (point.first >= 0) &&
+               (point.first < this->width);
     return false;
 }
 
@@ -41,13 +67,20 @@ bool AStar::isUnBlocked(const Pair &point) const {
 }
 
 double AStar::heuristic(const Pair &source) const {
-    return (abs(source.first - this->dest.first) + abs(source.second - this->dest.second));
+    int min_heuristic = INT_MAX;
+    int heuristic;
+    for (Pair d: this->dest) {
+        heuristic = abs(source.first - d.first) + abs(source.second - d.second);
+        if (heuristic < min_heuristic)
+            min_heuristic = heuristic;
+    }
+    return min_heuristic;
 }
 
-void AStar::tracePath() {
+void AStar::tracePath(Pair &d) {
     std::vector<Pair> path;
 
-    int i = this->dest.first, j = this->dest.second;
+    int i = d.first, j = d.second;
     Pair next_node = this->nodeDetails[j][i].parent;
     do {
         path.push_back(next_node);
@@ -57,7 +90,7 @@ void AStar::tracePath() {
     } while (this->nodeDetails[j][i].parent != next_node);
 
     path.emplace_back(i, j);
-    path.push_back(dest);
+    path.push_back(d);
 
     for (int k = 0; k < this->height; k++) {
         for (int l = 0; l < this->width; l++) {
@@ -81,31 +114,28 @@ void AStar::aStarSearch() {
         return;
     }
 
-    if (!isValid(this->dest)) {
-        printf("Le point de destination n'est pas dans l'image\n");
-        return;
-    }
+    for (Pair d: this->dest)
+        if (!isValid(d)) {
+            printf("Le(s) point(s) de destination n'est/sont pas dans l'image\n");
+            return;
+        }
 
     if (!isUnBlocked(this->src)) {
         printf("Le point source est un obstacle\n");
         return;
     }
 
-    if (!isUnBlocked(this->dest)) {
-        printf("Le point de destination est un obstacle\n");
-        return;
-    }
+    for (Pair d: this->dest)
+        if (!isUnBlocked(d)) {
+            printf("Le(s) point(s) de destination est/sont un obstacle\n");
+            return;
+        }
 
-
-    if (!isUnBlocked(this->src) || !isUnBlocked(this->dest)) {
-        printf("Le point source et/ou destination est(sont) bloqué(s)\n");
-        return;
-    }
-
-    if (this->src == this->dest) {
-        printf("Le point source est le même que celui de destination\n");
-        return;
-    }
+    for (Pair d: this->dest)
+        if (this->src == d) {
+            printf("Le point source est déjà dans la destination\n");
+            return;
+        }
 
     bool closedList[this->height][this->width];
     memset(closedList, false, sizeof(closedList));
@@ -133,24 +163,26 @@ void AStar::aStarSearch() {
             for (int add_y = -1; add_y <= 1; add_y++) {
                 Pair neighbour(i + add_x, j + add_y);
                 if (isValid(neighbour)) {
-                    if (neighbour == dest) {
-                        this->nodeDetails[neighbour.second][neighbour.first].parent = {i, j};
-                        printf("Le point de destination à été atteint\n");
-                        tracePath();
-                        return;
-                    } else if (!closedList[neighbour.second][neighbour.first] && isUnBlocked(neighbour)) {
-                        double gNew = this->nodeDetails[j][i].g + 1.0;
-                        double hNew = heuristic(neighbour);
-                        double fNew = gNew + hNew;
-
-                        if (this->nodeDetails[neighbour.second][neighbour.first].f == -1 ||
-                                this->nodeDetails[neighbour.second][neighbour.first].f > fNew) {
-                            openList.emplace(fNew, neighbour.second, neighbour.first);
-
-                            this->nodeDetails[neighbour.second][neighbour.first].g = gNew;
-                            this->nodeDetails[neighbour.second][neighbour.first].h = hNew;
-                            this->nodeDetails[neighbour.second][neighbour.first].f = fNew;
+                    for (Pair d: this->dest) {
+                        if (d.first == neighbour.first && d.second == neighbour.second) {
                             this->nodeDetails[neighbour.second][neighbour.first].parent = {i, j};
+                            printf("Le point de destination à été atteint\n");
+                            this->tracePath(d);
+                            return;
+                        } else if (!closedList[neighbour.second][neighbour.first] && isUnBlocked(neighbour)) {
+                            double gNew = this->nodeDetails[j][i].g + 1.0;
+                            double hNew = heuristic(neighbour);
+                            double fNew = gNew + hNew;
+
+                            if (this->nodeDetails[neighbour.second][neighbour.first].f == -1 ||
+                                this->nodeDetails[neighbour.second][neighbour.first].f > fNew) {
+                                openList.emplace(fNew, neighbour.second, neighbour.first);
+
+                                this->nodeDetails[neighbour.second][neighbour.first].g = gNew;
+                                this->nodeDetails[neighbour.second][neighbour.first].h = hNew;
+                                this->nodeDetails[neighbour.second][neighbour.first].f = fNew;
+                                this->nodeDetails[neighbour.second][neighbour.first].parent = {i, j};
+                            }
                         }
                     }
                 }
@@ -160,4 +192,5 @@ void AStar::aStarSearch() {
     printf("Impossible de trouver le chemin\n");
 
 }
+
 

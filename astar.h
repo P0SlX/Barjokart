@@ -25,11 +25,12 @@ private:
     int width, height;
     std::vector<std::vector<int> > grid;
     std::vector<std::vector<Node> > nodeDetails;
-    const Pair src, dest;
+    const Pair src;
+    std::vector<Pair> dest;
     const std::string filename;
 
 public:
-    AStar(Pair start, Pair dest, std::string filename);
+    AStar(Pair &src, int dest[3], std::string &filename);
 
     bool isValid(const Pair &point) const;
 
@@ -37,7 +38,7 @@ public:
 
     double heuristic(const Pair &source) const;
 
-    void tracePath();
+    void tracePath(Pair &d);
 
     void aStarSearch();
 };
