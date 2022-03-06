@@ -9,7 +9,7 @@ find_package(X11 REQUIRED)
 link_libraries(${X11_LIBRARIES})
 include_directories(${X11_INCLUDE_DIR})
 find_package(Threads)
-add_executable(barjokart main.cpp CImg.h image.cpp image.h point.h astar.cpp astar.h)
+add_executable(barjokart main.cpp CImg.h astar.cpp astar.h)
 target_link_libraries(barjokart m ${CMAKE_THREAD_LIBS_INIT})
 
 add_custom_command(TARGET barjokart POST_BUILD
