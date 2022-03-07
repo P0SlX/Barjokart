@@ -192,7 +192,7 @@ void AStar::aStarSearch() {
 void AStar::writeFile(std::vector <Pair> vecteur) {
     std::fstream fichier;
      std::string nomfichier= "equipe4.bin";
-    fichier.open("bajokart", std::ios::out| std::ios::binary);
+    fichier.open(nomfichier, std::ios::out| std::ios::binary);
     if (!fichier.is_open()) {
         std::cout << "Impossible d'ecrire le fichier est deja ouvert " << nomfichier << '\n';
     } else {
