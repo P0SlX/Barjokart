@@ -20,6 +20,7 @@ typedef std::tuple<double, int, int> Tuple;
 struct Node {
     Pair parent;
     double f, g, h;
+    bool is_wall;
 
     Node() : parent(-1, -1), f(-1), g(-1), h(-1) {}
 };
@@ -27,8 +28,7 @@ struct Node {
 class AStar {
 private:
     int width, height;
-    std::vector<std::vector<int> > grid;
-    std::vector<std::vector<Node> > nodeDetails;
+    std::vector<std::vector<Node> > grid;
     const Pair src;
     std::vector<Pair> dest;
     const std::string filename;
@@ -47,7 +47,7 @@ public:
 
     void aStarSearch();
 
-    void writeFile(std::vector<Pair>);
+    void writeFile(std::vector <Pair> &vecteur);
 };
 
 

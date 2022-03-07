@@ -6,7 +6,7 @@ int main() {
     //  - Use of pointers for A*
 
     // start coord
-   Pair src = Pair(0, 0);
+    Pair src = Pair(89, 92);
 
     // destination color
     int dest[3] = {255, 0, 0};
@@ -21,7 +21,6 @@ int main() {
     v1.push_back(src);
     v1.push_back(src1);
     astar.writeFile(v1);
-
 
 
     return 0;
