@@ -186,6 +186,27 @@ void AStar::aStarSearch() {
     }
     printf("Impossible de trouver le chemin\n");
 
+
 }
+
+void AStar::writeFile(std::vector <Pair> vecteur) {
+    std::fstream fichier;
+     std::string nomfichier= "equipe4.bin";
+    fichier.open("bajokart", std::ios::out| std::ios::binary);
+    if (!fichier.is_open()) {
+        std::cout << "Impossible d'ecrire le fichier est deja ouvert " << nomfichier << '\n';
+    } else {
+        std::vector<Pair>::iterator it;
+        for (it=vecteur.begin(); it != vecteur.end(); it++){
+            int x=it->first;
+            int y=it->second;
+            fichier.write ((char *)&x, sizeof(int));
+            fichier.write ((char *)&y, sizeof(int));
+        }
+        printf("Ecriture reussie\n");
+        fichier.close();
+    }
+}
+
 
 

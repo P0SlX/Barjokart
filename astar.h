@@ -9,6 +9,10 @@
 #include <stack>
 #include <tuple>
 #include "CImg.h"
+#include <fstream>
+#include "string"
+#include <vector>
+#include <bitset>
 
 typedef std::pair<int, int> Pair;
 typedef std::tuple<double, int, int> Tuple;
@@ -42,6 +46,8 @@ public:
     void tracePath(Pair &d);
 
     void aStarSearch();
+
+    void writeFile(std::vector<Pair>);
 };
 
 
