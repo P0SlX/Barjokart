@@ -31,7 +31,7 @@ private:
     const Pair src;
     std::vector<Pair> dest;
     const std::string filename;
-    std::vector<std::vector<Node *> > grid;
+    std::vector<std::vector<Node *> > *grid;
     cimg_library::CImg<unsigned char> *img;
 
 public:

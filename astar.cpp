@@ -8,10 +8,11 @@ AStar::AStar(Pair &src, int *dest, std::string &filename) : src(std::move(src)),
 
 
     // instantiate the grid with vector of vector of node pointers
+    this->grid = new std::vector<std::vector<Node *>>;
     for (int i = 0; i < this->height; i++) {
-        this->grid.emplace_back();
+        this->grid->emplace_back();
         for (int j = 0; j < this->width; j++) {
-            grid[i].push_back(new Node());
+            (*this->grid)[i].push_back(new Node());
         }
     }
 
@@ -26,14 +27,14 @@ AStar::AStar(Pair &src, int *dest, std::string &filename) : src(std::move(src)),
 
             // Chemin libre ou point de départ
             if (isFree || isGreen)
-                this->grid[j][i]->is_wall = false;
+                (*this->grid)[j][i]->is_wall = false;
 
             else if (isDest) {   // Destination
                 this->dest.emplace_back(j, i);
-                this->grid[j][i]->is_wall = false;
+                (*this->grid)[j][i]->is_wall = false;
 
             } else
-                this->grid[j][i]->is_wall = true;
+                (*this->grid)[j][i]->is_wall = true;
         }
     }
 
@@ -41,12 +42,14 @@ AStar::AStar(Pair &src, int *dest, std::string &filename) : src(std::move(src)),
     std::cout << "Grille avec le(s) point(s) d'arrivée(s) : " << std::endl;
     for (int k = 0; k < this->height; k++) {
         for (int l = 0; l < this->width; l++) {
+            // Ce if est super lent donc pour la version finale il faudra commenter
+            // C'est juste à des fins de débug pour savoir sont les points d'arrivées
             if (find(this->dest.begin(), this->dest.end(), Pair(l, k)) != this->dest.end()) {
                 std::cout << "X ";
                 continue;
             }
 
-            if (this->grid[l][k]->is_wall)
+            if ((*this->grid)[l][k]->is_wall)
                 std::cout << "██";
             else
                 std::cout << "  ";
@@ -60,7 +63,7 @@ AStar::AStar(Pair &src, int *dest, std::string &filename) : src(std::move(src)),
 AStar::~AStar() {
     for (int i = 0; i < this->height; i++) {
         for (int j = 0; j < this->width; j++) {
-            delete this->grid[i][j];
+            delete (*this->grid)[i][j];
         }
     }
     delete this->img;
@@ -78,7 +81,7 @@ bool AStar::isValid(const Pair &point) const {
 
 bool AStar::isUnBlocked(const Pair &point) const {
     // Si le point est dans la grille et n'est pas un mur
-    return isValid(point) && !this->grid[point.first][point.second]->is_wall;
+    return isValid(point) && !(*this->grid)[point.first][point.second]->is_wall;
 }
 
 
@@ -98,13 +101,13 @@ void AStar::tracePath(Pair &d) {
     std::vector<Pair> path;
 
     int i = d.first, j = d.second;
-    Pair next_node = this->grid[j][i]->parent;
+    Pair next_node = (*this->grid)[j][i]->parent;
     do {
         path.push_back(next_node);
-        next_node = this->grid[j][i]->parent;
+        next_node = (*this->grid)[j][i]->parent;
         i = next_node.first;
         j = next_node.second;
-    } while (this->grid[j][i]->parent != next_node);
+    } while ((*this->grid)[j][i]->parent != next_node);
 
     path.emplace_back(i, j);
     path.push_back(d);
@@ -152,10 +155,10 @@ void AStar::aStarSearch() {
 
     int i, j;
     i = src.first, j = src.second;
-    this->grid[j][i]->f = 0.0;
-    this->grid[j][i]->g = 0.0;
-    this->grid[j][i]->h = 0.0;
-    this->grid[j][i]->parent = {i, j};
+    (*this->grid)[j][i]->f = 0.0;
+    (*this->grid)[j][i]->g = 0.0;
+    (*this->grid)[j][i]->h = 0.0;
+    (*this->grid)[j][i]->parent = {i, j};
 
     std::priority_queue<Tuple, std::vector<Tuple>, std::greater<> > openList;
 
@@ -175,23 +178,23 @@ void AStar::aStarSearch() {
                 if (isValid(neighbour)) {
                     for (Pair d: this->dest) {
                         if (d.first == neighbour.first && d.second == neighbour.second) {
-                            this->grid[neighbour.second][neighbour.first]->parent = {i, j};
+                            (*this->grid)[neighbour.second][neighbour.first]->parent = {i, j};
                             printf("Le point de destination à été atteint\n");
                             this->tracePath(d);
                             return;
                         } else if (!closedList[neighbour.second][neighbour.first] && isUnBlocked(neighbour)) {
-                            double gNew = this->grid[j][i]->g + 1.0;
+                            double gNew = (*this->grid)[j][i]->g + 1.0;
                             double hNew = heuristic(neighbour);
                             double fNew = gNew + hNew;
 
-                            if (this->grid[neighbour.second][neighbour.first]->f == -1 ||
-                                this->grid[neighbour.second][neighbour.first]->f > fNew) {
+                            if ((*this->grid)[neighbour.second][neighbour.first]->f == -1 ||
+                                    (*this->grid)[neighbour.second][neighbour.first]->f > fNew) {
                                 openList.emplace(fNew, neighbour.second, neighbour.first);
 
-                                this->grid[neighbour.second][neighbour.first]->g = gNew;
-                                this->grid[neighbour.second][neighbour.first]->h = hNew;
-                                this->grid[neighbour.second][neighbour.first]->f = fNew;
-                                this->grid[neighbour.second][neighbour.first]->parent = {i, j};
+                                (*this->grid)[neighbour.second][neighbour.first]->g = gNew;
+                                (*this->grid)[neighbour.second][neighbour.first]->h = hNew;
+                                (*this->grid)[neighbour.second][neighbour.first]->f = fNew;
+                                (*this->grid)[neighbour.second][neighbour.first]->parent = {i, j};
                             }
                         }
                     }
