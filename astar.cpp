@@ -1,36 +1,39 @@
 #include "astar.h"
 
 AStar::AStar(Pair &src, int *dest, std::string &filename) : src(std::move(src)), filename(std::move(filename)) {
-    this->imageObject = cimg_library::CImg<unsigned char>(this->filename.c_str());
+    this->img = new cimg_library::CImg<unsigned char>(this->filename.c_str());
 
-    this->height = imageObject.height();
-    this->width = imageObject.width();
+    this->height = img->height();
+    this->width = img->width();
 
-    // Initialize the grid
-    this->grid.reserve(this->height);
+
+    // instantiate the grid with vector of vector of node pointers
     for (int i = 0; i < this->height; i++) {
-        this->grid.emplace_back(this->width);
+        this->grid.emplace_back();
+        for (int j = 0; j < this->width; j++) {
+            grid[i].push_back(new Node());
+        }
     }
 
     // Transforming the image into a grid of 0s and 1s
     // And at the same time, storing the coordinates of the destinations points
     for (int i = 0; i < this->height; i++) {
         for (int j = 0; j < this->width; j++) {
-            bool isFree = imageObject(j, i, 0) == 255 && imageObject(j, i, 1) == 255 && imageObject(j, i, 2) == 255;
-            bool isGreen = imageObject(j, i, 0) == 0 && imageObject(j, i, 1) == 255 && imageObject(j, i, 2) == 4;
-            bool isDest = imageObject(j, i, 0) == dest[0] && imageObject(j, i, 1) == dest[1] &&
-                          imageObject(j, i, 2) == dest[2];
+            bool isFree = (*this->img)(j, i, 0) == 255 && (*this->img)(j, i, 1) == 255 && (*this->img)(j, i, 2) == 255;
+            bool isGreen = (*this->img)(j, i, 0) == 0 && (*this->img)(j, i, 1) == 255 && (*this->img)(j, i, 2) == 4;
+            bool isDest = (*this->img)(j, i, 0) == dest[0] && (*this->img)(j, i, 1) == dest[1] &&
+                          (*this->img)(j, i, 2) == dest[2];
 
             // Chemin libre ou point de départ
             if (isFree || isGreen)
-                this->grid[j][i].is_wall = false;
+                this->grid[j][i]->is_wall = false;
 
             else if (isDest) {   // Destination
                 this->dest.emplace_back(j, i);
-                this->grid[j][i].is_wall = false;
+                this->grid[j][i]->is_wall = false;
 
             } else
-                this->grid[j][i].is_wall = true;
+                this->grid[j][i]->is_wall = true;
         }
     }
 
@@ -42,18 +45,27 @@ AStar::AStar(Pair &src, int *dest, std::string &filename) : src(std::move(src)),
                 std::cout << "X ";
                 continue;
             }
-            // Est libre
-            if (!this->grid[l][k].is_wall)
-                std::cout << "  ";
-            else
+
+            if (this->grid[l][k]->is_wall)
                 std::cout << "██";
+            else
+                std::cout << "  ";
         }
         // \n pour pas flush le buffer et gagner du temps
         std::cout << "\n";
     }
-
-
 }
+
+
+AStar::~AStar() {
+    for (int i = 0; i < this->height; i++) {
+        for (int j = 0; j < this->width; j++) {
+            delete this->grid[i][j];
+        }
+    }
+    delete this->img;
+}
+
 
 bool AStar::isValid(const Pair &point) const {
     // Check si le point est dans la grille
@@ -63,10 +75,12 @@ bool AStar::isValid(const Pair &point) const {
     return false;
 }
 
+
 bool AStar::isUnBlocked(const Pair &point) const {
     // Si le point est dans la grille et n'est pas un mur
-    return isValid(point) && !grid[point.first][point.second].is_wall;
+    return isValid(point) && !this->grid[point.first][point.second]->is_wall;
 }
+
 
 double AStar::heuristic(const Pair &source) const {
     int min_heuristic = INT_MAX;
@@ -79,17 +93,18 @@ double AStar::heuristic(const Pair &source) const {
     return min_heuristic;
 }
 
+
 void AStar::tracePath(Pair &d) {
     std::vector<Pair> path;
 
     int i = d.first, j = d.second;
-    Pair next_node = this->grid[j][i].parent;
+    Pair next_node = this->grid[j][i]->parent;
     do {
         path.push_back(next_node);
-        next_node = this->grid[j][i].parent;
+        next_node = this->grid[j][i]->parent;
         i = next_node.first;
         j = next_node.second;
-    } while (this->grid[j][i].parent != next_node);
+    } while (this->grid[j][i]->parent != next_node);
 
     path.emplace_back(i, j);
     path.push_back(d);
@@ -97,10 +112,11 @@ void AStar::tracePath(Pair &d) {
     // save path on image
     for (Pair p: path) {
         const unsigned char color_mag[] = {0, 255, 0};
-        imageObject.draw_point(p.first, p.second, color_mag);
+        this->img->draw_point(p.first, p.second, color_mag);
     }
-    imageObject.save("output.png");
+    this->img->save("output.png");
 }
+
 
 void AStar::aStarSearch() {
     if (!isValid(this->src)) {
@@ -136,10 +152,10 @@ void AStar::aStarSearch() {
 
     int i, j;
     i = src.first, j = src.second;
-    this->grid[j][i].f = 0.0;
-    this->grid[j][i].g = 0.0;
-    this->grid[j][i].h = 0.0;
-    this->grid[j][i].parent = {i, j};
+    this->grid[j][i]->f = 0.0;
+    this->grid[j][i]->g = 0.0;
+    this->grid[j][i]->h = 0.0;
+    this->grid[j][i]->parent = {i, j};
 
     std::priority_queue<Tuple, std::vector<Tuple>, std::greater<> > openList;
 
@@ -159,23 +175,23 @@ void AStar::aStarSearch() {
                 if (isValid(neighbour)) {
                     for (Pair d: this->dest) {
                         if (d.first == neighbour.first && d.second == neighbour.second) {
-                            this->grid[neighbour.second][neighbour.first].parent = {i, j};
+                            this->grid[neighbour.second][neighbour.first]->parent = {i, j};
                             printf("Le point de destination à été atteint\n");
                             this->tracePath(d);
                             return;
                         } else if (!closedList[neighbour.second][neighbour.first] && isUnBlocked(neighbour)) {
-                            double gNew = this->grid[j][i].g + 1.0;
+                            double gNew = this->grid[j][i]->g + 1.0;
                             double hNew = heuristic(neighbour);
                             double fNew = gNew + hNew;
 
-                            if (this->grid[neighbour.second][neighbour.first].f == -1 ||
-                                this->grid[neighbour.second][neighbour.first].f > fNew) {
+                            if (this->grid[neighbour.second][neighbour.first]->f == -1 ||
+                                this->grid[neighbour.second][neighbour.first]->f > fNew) {
                                 openList.emplace(fNew, neighbour.second, neighbour.first);
 
-                                this->grid[neighbour.second][neighbour.first].g = gNew;
-                                this->grid[neighbour.second][neighbour.first].h = hNew;
-                                this->grid[neighbour.second][neighbour.first].f = fNew;
-                                this->grid[neighbour.second][neighbour.first].parent = {i, j};
+                                this->grid[neighbour.second][neighbour.first]->g = gNew;
+                                this->grid[neighbour.second][neighbour.first]->h = hNew;
+                                this->grid[neighbour.second][neighbour.first]->f = fNew;
+                                this->grid[neighbour.second][neighbour.first]->parent = {i, j};
                             }
                         }
                     }
@@ -187,6 +203,7 @@ void AStar::aStarSearch() {
 
 
 }
+
 
 void AStar::writeFile(std::vector<Pair> &vecteur) {
     std::fstream fichier;
@@ -206,4 +223,3 @@ void AStar::writeFile(std::vector<Pair> &vecteur) {
         fichier.close();
     }
 }
-

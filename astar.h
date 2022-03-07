@@ -28,14 +28,16 @@ struct Node {
 class AStar {
 private:
     int width, height;
-    std::vector<std::vector<Node> > grid;
     const Pair src;
     std::vector<Pair> dest;
     const std::string filename;
-    cimg_library::CImg<unsigned char> imageObject;
+    std::vector<std::vector<Node *> > grid;
+    cimg_library::CImg<unsigned char> *img;
 
 public:
     AStar(Pair &src, int dest[3], std::string &filename);
+
+    ~AStar();
 
     bool isValid(const Pair &point) const;
 
@@ -47,7 +49,7 @@ public:
 
     void aStarSearch();
 
-    void writeFile(std::vector <Pair> &vecteur);
+    void writeFile(std::vector<Pair> &vecteur);
 };
 
 

@@ -6,12 +6,12 @@ int main() {
     //  - Use of pointers for A*
 
     // start coord
-    Pair src = Pair(89, 92);
+    Pair src = Pair(0, 0);
 
     // destination color
     int dest[3] = {255, 0, 0};
 
-    std::string path = "hills.png";
+    std::string path = "adaptallure.png";
 
     AStar astar(src, dest, path);
     astar.aStarSearch();
