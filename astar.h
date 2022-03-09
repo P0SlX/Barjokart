@@ -35,7 +35,7 @@ private:
     cimg_library::CImg<unsigned char> imageObject;
 
 public:
-    AStar(Pair &src, int dest[3], std::string &filename);
+    AStar(Pair &src, const int dest[3], std::string &filename);
 
     bool isValid(const Pair &point) const;
 
@@ -43,11 +43,11 @@ public:
 
     double heuristic(const Pair &source) const;
 
-    void tracePath(Pair &d);
+    std::vector<Pair> *tracePath(Pair &d);
 
-    void aStarSearch();
+    std::vector<Pair> * aStarSearch();
 
-    void writeFile(std::vector<Pair>);
+    static void writeFile(std::vector<Pair>);
 };
 
 

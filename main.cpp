@@ -16,14 +16,14 @@ int main() {
     std::cin >> filename;
     filename = "../param_circuits/" + filename;
     printf("%s\n", filename.c_str());
-    toml::table tbl;
+    /*toml::table tbl;
 
     try {
         tbl = toml::parse_file(filename);
     }
     catch (const toml::parse_error& e) {
         printf("Erreur de chargement\n");
-    }
+    }*/
     
     std::string path = "hills.png";
 

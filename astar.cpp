@@ -1,6 +1,6 @@
 #include "astar.h"
 
-AStar::AStar(Pair &src, int *dest, std::string &filename) : src(std::move(src)), filename(std::move(filename)) {
+AStar::AStar(Pair &src, const int *dest, std::string &filename) : src(std::move(src)), filename(std::move(filename)) {
     this->imageObject = cimg_library::CImg<unsigned char>(this->filename.c_str());
 
     this->height = imageObject.height();
@@ -80,56 +80,58 @@ double AStar::heuristic(const Pair &source) const {
     return min_heuristic;
 }
 
-void AStar::tracePath(Pair &d) {
-    std::vector<Pair> path;
+std::vector<Pair> *AStar::tracePath(Pair &d) {
+    auto *path = new std::vector<Pair>();
 
     int i = d.first, j = d.second;
     Pair next_node = this->nodeDetails[j][i].parent;
     do {
-        path.push_back(next_node);
+        path->push_back(next_node);
         next_node = this->nodeDetails[j][i].parent;
         i = next_node.first;
         j = next_node.second;
     } while (this->nodeDetails[j][i].parent != next_node);
 
-    path.emplace_back(i, j);
-    path.push_back(d);
+    path->emplace_back(i, j);
+    path->push_back(d);
 
     // save path on image
-    for (Pair p: path) {
+    for (Pair p: *path) {
         const unsigned char color_mag[] = {0, 255, 0};
         imageObject.draw_point(p.first, p.second, color_mag);
     }
     imageObject.save("output.png");
+
+    return path;
 }
 
-void AStar::aStarSearch() {
+std::vector<Pair> *AStar::aStarSearch() {
     if (!isValid(this->src)) {
         printf("Le point source n'est pas dans l'image\n");
-        return;
+        return nullptr;
     }
 
     for (Pair d: this->dest)
         if (!isValid(d)) {
             printf("Le(s) point(s) de destination n'est/sont pas dans l'image\n");
-            return;
+            return nullptr;
         }
 
     if (!isUnBlocked(this->src)) {
         printf("Le point source est un obstacle\n");
-        return;
+        return nullptr;
     }
 
     for (Pair d: this->dest)
         if (!isUnBlocked(d)) {
             printf("Le(s) point(s) de destination est/sont un obstacle\n");
-            return;
+            return nullptr;
         }
 
     for (Pair d: this->dest)
         if (this->src == d) {
             printf("Le point source est déjà dans la destination\n");
-            return;
+            return nullptr;
         }
 
     bool closedList[this->height][this->width];
@@ -162,8 +164,7 @@ void AStar::aStarSearch() {
                         if (d.first == neighbour.first && d.second == neighbour.second) {
                             this->nodeDetails[neighbour.second][neighbour.first].parent = {i, j};
                             printf("Le point de destination à été atteint\n");
-                            this->tracePath(d);
-                            return;
+                            return this->tracePath(d);
                         } else if (!closedList[neighbour.second][neighbour.first] && isUnBlocked(neighbour)) {
                             double gNew = this->nodeDetails[j][i].g + 1.0;
                             double hNew = heuristic(neighbour);
@@ -189,19 +190,19 @@ void AStar::aStarSearch() {
 
 }
 
-void AStar::writeFile(std::vector <Pair> vecteur) {
+void AStar::writeFile(std::vector<Pair> vecteur) {
     std::fstream fichier;
-     std::string nomfichier= "equipe4.bin";
-    fichier.open(nomfichier, std::ios::out| std::ios::binary);
+    std::string nomfichier = "equipe4.bin";
+    fichier.open(nomfichier, std::ios::out | std::ios::binary);
     if (!fichier.is_open()) {
         std::cout << "Impossible d'ecrire le fichier est deja ouvert " << nomfichier << '\n';
     } else {
         std::vector<Pair>::iterator it;
-        for (it=vecteur.begin(); it != vecteur.end(); it++){
-            int x=it->first;
-            int y=it->second;
-            fichier.write ((char *)&x, sizeof(int));
-            fichier.write ((char *)&y, sizeof(int));
+        for (it = vecteur.begin(); it != vecteur.end(); it++) {
+            int x = it->first;
+            int y = it->second;
+            fichier.write((char *) &x, sizeof(int));
+            fichier.write((char *) &y, sizeof(int));
         }
         printf("Ecriture reussie\n");
         fichier.close();
