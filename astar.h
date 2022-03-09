@@ -45,7 +45,9 @@ public:
 
     std::vector<Pair> *tracePath(Pair &d);
 
-    std::vector<Pair> * aStarSearch();
+    static std::vector<Pair> *speedVector(std::vector<Pair> *path);
+
+    std::vector<Pair> *aStarSearch();
 
     static void writeFile(std::vector<Pair>);
 };

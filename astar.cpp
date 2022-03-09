@@ -105,6 +105,15 @@ std::vector<Pair> *AStar::tracePath(Pair &d) {
     return path;
 }
 
+std::vector<Pair> *AStar::speedVector(std::vector<Pair> *path) {
+    auto *speed = new std::vector<Pair>();
+    for (int n = 1; n < path->size(); n++) {
+        speed->emplace_back(path->at(n).first - path->at(n - 1).first,
+                            path->at(n).second - path->at(n - 1).second);
+    }
+    return speed;
+}
+
 std::vector<Pair> *AStar::aStarSearch() {
     if (!isValid(this->src)) {
         printf("Le point source n'est pas dans l'image\n");
@@ -164,7 +173,7 @@ std::vector<Pair> *AStar::aStarSearch() {
                         if (d.first == neighbour.first && d.second == neighbour.second) {
                             this->nodeDetails[neighbour.second][neighbour.first].parent = {i, j};
                             printf("Le point de destination à été atteint\n");
-                            return this->tracePath(d);
+                            return speedVector(this->tracePath(d));
                         } else if (!closedList[neighbour.second][neighbour.first] && isUnBlocked(neighbour)) {
                             double gNew = this->nodeDetails[j][i].g + 1.0;
                             double hNew = heuristic(neighbour);
@@ -208,6 +217,3 @@ void AStar::writeFile(std::vector<Pair> vecteur) {
         fichier.close();
     }
 }
-
-
-

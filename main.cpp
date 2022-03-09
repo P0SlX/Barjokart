@@ -34,7 +34,7 @@ int main() {
     Pair src1 = Pair(2, 2);
     v1.push_back(src);
     v1.push_back(src1);
-    astar.writeFile(v1);
+    AStar::writeFile(v1);
 
 
 
