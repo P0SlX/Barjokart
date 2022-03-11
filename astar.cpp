@@ -104,16 +104,16 @@ std::vector<Node *> *AStar::tracePath(Pair &d) {
     Pair next_node = (*this->grid)[j][i]->parent;
     do {
         path->push_back(next_node);
-        path_node->push_back((*this->grid)[next_node.first][next_node.second]);
+        path_node->push_back((*this->grid)[next_node.second][next_node.first]);
         next_node = (*this->grid)[j][i]->parent;
         i = next_node.first;
         j = next_node.second;
     } while ((*this->grid)[j][i]->parent != next_node);
 
     path->emplace_back(i, j);
-    path_node->emplace_back((*this->grid)[i][j]);
+    path_node->emplace_back((*this->grid)[j][i]);
     path->push_back(d);
-    path_node->push_back((*this->grid)[d.first][d.second]);
+    path_node->push_back((*this->grid)[d.second][d.first]);
 
     // save path on image
     for (Pair p: *path) {
