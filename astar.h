@@ -45,13 +45,13 @@ public:
 
     double heuristic(const Pair &source) const;
 
-    std::vector<Pair> *tracePath(Pair &d);
+    std::vector<Node*> *tracePath(Pair &d);
 
-    static std::vector<Pair> *speedVector(std::vector<Pair> *path);
+    static std::vector<Pair> *speedVector(std::vector<Node*> *d);
 
-    std::vector<Pair> *aStarSearch();
-    
-    void writeFile(std::vector<Pair> &vecteur);
+    std::vector<Node*> *aStarSearch();
+
+    static void writeFile(std::vector<Pair> *vecteur);
 };
 
 

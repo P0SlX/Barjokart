@@ -1,6 +1,6 @@
 #include "astar.h"
 
-AStar::AStar(Pair &src, int *dest, std::string &filename) : src(std::move(src)), filename(std::move(filename)) {
+AStar::AStar(Pair &src, const int dest[3], std::string &filename) : src(std::move(src)), filename(std::move(filename)) {
     this->img = new cimg_library::CImg<unsigned char>(this->filename.c_str());
 
     this->height = img->height();
@@ -96,21 +96,24 @@ double AStar::heuristic(const Pair &source) const {
     return min_heuristic;
 }
 
-
-void AStar::tracePath(Pair &d) {
-    std::vector<Pair> path;
+std::vector<Node *> *AStar::tracePath(Pair &d) {
+    auto *path = new std::vector<Pair>;
+    auto *path_node = new std::vector<Node *>;
 
     int i = d.first, j = d.second;
     Pair next_node = (*this->grid)[j][i]->parent;
     do {
-        path.push_back(next_node);
+        path->push_back(next_node);
+        path_node->push_back((*this->grid)[next_node.first][next_node.second]);
         next_node = (*this->grid)[j][i]->parent;
         i = next_node.first;
         j = next_node.second;
     } while ((*this->grid)[j][i]->parent != next_node);
 
     path->emplace_back(i, j);
+    path_node->emplace_back((*this->grid)[i][j]);
     path->push_back(d);
+    path_node->push_back((*this->grid)[d.first][d.second]);
 
     // save path on image
     for (Pair p: *path) {
@@ -118,10 +121,22 @@ void AStar::tracePath(Pair &d) {
         this->img->draw_point(p.first, p.second, color_mag);
     }
     this->img->save("output.png");
+    return path_node;
 }
 
+std::vector<Pair> *AStar::speedVector(std::vector<Node *> *d) {
+    auto *speed_vector = new std::vector<Pair>;
+    for (int i = 0; i < d->size() - 1; i++) {
+        Node *node1 = d->at(i);
+        Node *node2 = d->at(i + 1);
+        int Vx = node2->parent.first - node1->parent.first;
+        int Vy = node2->parent.second - node1->parent.second;
+        speed_vector->push_back(Pair(Vx, Vy));
+    }
+    return speed_vector;
+}
 
-void AStar::aStarSearch() {
+std::vector<Node *> *AStar::aStarSearch() {
     if (!isValid(this->src)) {
         printf("Le point source n'est pas dans l'image\n");
         return nullptr;
@@ -180,14 +195,14 @@ void AStar::aStarSearch() {
                         if (d.first == neighbour.first && d.second == neighbour.second) {
                             (*this->grid)[neighbour.second][neighbour.first]->parent = {i, j};
                             printf("Le point de destination à été atteint\n");
-                            return speedVector(this->tracePath(d));
+                            return this->tracePath(d);
                         } else if (!closedList[neighbour.second][neighbour.first] && isUnBlocked(neighbour)) {
                             double gNew = (*this->grid)[j][i]->g + 1.0;
                             double hNew = heuristic(neighbour);
                             double fNew = gNew + hNew;
 
                             if ((*this->grid)[neighbour.second][neighbour.first]->f == -1 ||
-                                    (*this->grid)[neighbour.second][neighbour.first]->f > fNew) {
+                                (*this->grid)[neighbour.second][neighbour.first]->f > fNew) {
                                 openList.emplace(fNew, neighbour.second, neighbour.first);
 
                                 (*this->grid)[neighbour.second][neighbour.first]->g = gNew;
@@ -202,12 +217,10 @@ void AStar::aStarSearch() {
         }
     }
     printf("Impossible de trouver le chemin\n");
-
-
+    return nullptr;
 }
 
-
-void AStar::writeFile(std::vector<Pair> &vecteur) {
+void AStar::writeFile(std::vector<Pair> *vecteur) {
     std::fstream fichier;
     std::string nomfichier = "equipe4.bin";
     fichier.open(nomfichier, std::ios::out | std::ios::binary);
@@ -215,7 +228,7 @@ void AStar::writeFile(std::vector<Pair> &vecteur) {
         std::cout << "Impossible d'ecrire le fichier est deja ouvert " << nomfichier << '\n';
     } else {
         std::vector<Pair>::iterator it;
-        for (it = vecteur.begin(); it != vecteur.end(); it++) {
+        for (it = vecteur->begin(); it != vecteur->end(); it++) {
             int x = it->first;
             int y = it->second;
             fichier.write((char *) &x, sizeof(int));
