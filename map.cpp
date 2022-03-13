@@ -1,9 +1,11 @@
 #include "map.h"
 
-Map::Map(cimg_library::CImg<unsigned char> *img, unsigned char *color_dest) {
+Map::Map(cimg_library::CImg<unsigned char> *img, const unsigned char *color_dest) {
     this->img = img;
 
     // Initialize the map
+    const unsigned char color_mag[] = {0, 255, 0};
+    const unsigned char color_mag2[] = {0, 255, 255};
     for (int i = 0; i < img->width(); i++) {
         for (int j = 0; j < img->height(); j++) {
             Node *node = new Node(i, j);
@@ -74,7 +76,7 @@ Map::Map(cimg_library::CImg<unsigned char> *img, unsigned char *color_dest) {
     }
     x /= (double) this->destinationsNodes.size();
     y /= (double) this->destinationsNodes.size();
-    this->destination = getNode((int) y, (int) x);
+    this->destination = getNode((int) x, (int) y);
 }
 
 

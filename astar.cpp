@@ -1,7 +1,7 @@
 #include "astar.h"
 
 AStar::AStar(Pair start, Map *map) {
-    this->startNode = map->getNode(start.second, start.first);
+    this->startNode = map->getNode(start.first, start.second);
     this->startNode->f = this->startNode->g = this->startNode->h = 0;
     this->path = new std::vector<Node *>();
     this->map = map;
@@ -80,8 +80,6 @@ std::vector<Node *> *AStar::aStarSearch() {
             childNode->h = h;
             childNode->setParent(currentNode);
 
-            if (childNode->isClosed)
-                childNode->isClosed = false;
             if (!childNode->isOpen)
                 pushOpen(childNode);
         }

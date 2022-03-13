@@ -15,7 +15,7 @@ public:
     std::vector<Node *> destinationsNodes;
 
 
-    Map(cimg_library::CImg<unsigned char> *img, unsigned char *color_dest);
+    Map(cimg_library::CImg<unsigned char> *img, const unsigned char *color_dest);
 
     ~Map();
 

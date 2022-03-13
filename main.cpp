@@ -38,6 +38,12 @@ int main() {
 
     AStar astar = AStar(start, map);
     auto *path = astar.aStarSearch();
+
+    if (path == nullptr) {
+        std::cout << "Aucun chemin trouvé" << std::endl;
+        return 1;
+    }
+
     auto *speedVector = astar.nodesToSpeedVector(path);
 
     std::string outputFilename = "output/" + name + ".bin";
