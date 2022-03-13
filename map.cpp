@@ -104,7 +104,3 @@ void Map::print() {
         std::cout << std::endl;
     }
 }
-
-
-void Map::writePathToPNG(std::vector<Node *> *path, std::string filename) {
-}

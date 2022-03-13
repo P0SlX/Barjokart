@@ -21,10 +21,6 @@ public:
 
     void print();
 
-    double heuristic(Node *node, Node *dest);
-
-    void writePathToPNG(std::vector<Node *> *path, std::string filename);
-
     // !!! Les arguments sont inversés
     Node *getNode(int x, int y) {
         return map[y * img->width() + x];
