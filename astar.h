@@ -13,47 +13,46 @@
 #include "string"
 #include <vector>
 #include <bitset>
-
-typedef std::pair<int, int> Pair;
-typedef std::tuple<double, int, int> Tuple;
-
-struct Node {
-    Pair parent;
-    double f, g, h;
-    bool is_wall;
-
-    Node() : parent(-1, -1), f(-1), g(-1), h(-1) {}
-};
+#include "map.h"
 
 class AStar {
-
-private:
-    int width, height;
-    const Pair src;
-    std::vector<Pair> dest;
-    const std::string filename;
-    std::vector<std::vector<Node *> > *grid;
-    cimg_library::CImg<unsigned char> *img;
-
 public:
-    AStar(Pair &src, const int dest[3], std::string &filename);
+    Node *startNode;
+    std::vector<Node *> openList, closedList;
+    std::vector<Node *> *path;
+    Map *map;
+
+    AStar(Pair start, Map *map);
 
     ~AStar();
 
-    bool isValid(const Pair &point) const;
+    void reconstructPath(Node *endNode);
 
-    bool isUnBlocked(const Pair &point) const;
-
-    double heuristic(const Pair &source) const;
-
-    std::vector<Node *> *tracePath(Pair &d);
-
-    static std::vector<Pair> *speedVector(std::vector<Node *> *d);
+    double heuristic(Node *node, Node *dest);
 
     std::vector<Node *> *aStarSearch();
 
-    static void writeFile(std::vector<Pair> *vector, const std::string& filename);
+    std::vector<Pair> *nodesToSpeedVector(std::vector<Node *> *nodes);
 
+    static void writeFile(const std::vector<Pair> &vecteur, std::string filename);
+
+    void pushOpen(Node *node) {
+        this->openList.push_back(node);
+        std::push_heap(this->openList.begin(), this->openList.end(), compareNodes());
+        node->isOpen = true;
+    }
+
+    void popOpen(Node *node) {
+        std::pop_heap(this->openList.begin(), this->openList.end(), compareNodes());
+        this->openList.pop_back();
+        node->isOpen = false;
+    }
+
+    struct compareNodes {
+        bool operator()(const Node *s1, const Node *s2) const {
+            return s1->f < s2->f;
+        }
+    };
 };
 
 #endif //BARJOKART_ASTAR_H
