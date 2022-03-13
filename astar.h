@@ -26,6 +26,7 @@ struct Node {
 };
 
 class AStar {
+
 private:
     int width, height;
     const Pair src;
@@ -45,14 +46,14 @@ public:
 
     double heuristic(const Pair &source) const;
 
-    std::vector<Node*> *tracePath(Pair &d);
+    std::vector<Node *> *tracePath(Pair &d);
 
-    static std::vector<Pair> *speedVector(std::vector<Node*> *d);
+    static std::vector<Pair> *speedVector(std::vector<Node *> *d);
 
-    std::vector<Node*> *aStarSearch();
+    std::vector<Node *> *aStarSearch();
 
-    static void writeFile(std::vector<Pair> *vecteur);
+    static void writeFile(std::vector<Pair> *vector, const std::string& filename);
+
 };
-
 
 #endif //BARJOKART_ASTAR_H

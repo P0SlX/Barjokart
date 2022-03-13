@@ -1,11 +1,10 @@
 #include "astar.h"
 
-AStar::AStar(Pair &src, const int dest[3], std::string &filename) : src(std::move(src)), filename(std::move(filename)) {
-    this->img = new cimg_library::CImg<unsigned char>(this->filename.c_str());
+AStar::AStar(Pair &src, const int dest[3], std::string &filename) : src(std::move(src)), filename(filename) {
+    this->img = new cimg_library::CImg<unsigned char>(("../input/" + this->filename + ".png").c_str());
 
     this->height = img->height();
     this->width = img->width();
-
 
     // instantiate the grid with vector of vector of node pointers
     this->grid = new std::vector<std::vector<Node *>>;
@@ -39,7 +38,7 @@ AStar::AStar(Pair &src, const int dest[3], std::string &filename) : src(std::mov
     }
 
     // Display grid with finish points
-    std::cout << "Grille avec le(s) point(s) d'arrivée(s) : " << std::endl;
+    std::cout << "Grille avec le(s) point(s) d'arrivee(s) : " << std::endl;
     for (int k = 0; k < this->height; k++) {
         for (int l = 0; l < this->width; l++) {
             // Ce if est super lent donc pour la version finale il faudra commenter
@@ -59,7 +58,6 @@ AStar::AStar(Pair &src, const int dest[3], std::string &filename) : src(std::mov
     }
 }
 
-
 AStar::~AStar() {
     for (int i = 0; i < this->height; i++) {
         for (int j = 0; j < this->width; j++) {
@@ -69,7 +67,6 @@ AStar::~AStar() {
     delete this->img;
 }
 
-
 bool AStar::isValid(const Pair &point) const {
     // Check si le point est dans la grille
     if (this->height > 0 && this->width > 0)
@@ -78,12 +75,10 @@ bool AStar::isValid(const Pair &point) const {
     return false;
 }
 
-
 bool AStar::isUnBlocked(const Pair &point) const {
     // Si le point est dans la grille et n'est pas un mur
     return isValid(point) && !(*this->grid)[point.first][point.second]->is_wall;
 }
-
 
 double AStar::heuristic(const Pair &source) const {
     int min_heuristic = INT_MAX;
@@ -120,7 +115,10 @@ std::vector<Node *> *AStar::tracePath(Pair &d) {
         const unsigned char color_mag[] = {0, 255, 0};
         this->img->draw_point(p.first, p.second, color_mag);
     }
-    this->img->save("output.png");
+
+    std::string path_name = "../output/" + this->filename + ".png";
+    this->img->save(path_name.c_str());
+
     return path_node;
 }
 
@@ -161,7 +159,7 @@ std::vector<Node *> *AStar::aStarSearch() {
 
     for (Pair d: this->dest)
         if (this->src == d) {
-            printf("Le point source est déjà dans la destination\n");
+            printf("Le point source est deja dans la destination\n");
             return nullptr;
         }
 
@@ -194,7 +192,7 @@ std::vector<Node *> *AStar::aStarSearch() {
                     for (Pair d: this->dest) {
                         if (d.first == neighbour.first && d.second == neighbour.second) {
                             (*this->grid)[neighbour.second][neighbour.first]->parent = {i, j};
-                            printf("Le point de destination à été atteint\n");
+                            printf("Le point de destination a ete atteint\n");
                             return this->tracePath(d);
                         } else if (!closedList[neighbour.second][neighbour.first] && isUnBlocked(neighbour)) {
                             double gNew = (*this->grid)[j][i]->g + 1.0;
@@ -220,21 +218,17 @@ std::vector<Node *> *AStar::aStarSearch() {
     return nullptr;
 }
 
-void AStar::writeFile(std::vector<Pair> *vecteur) {
-    std::fstream fichier;
-    std::string nomfichier = "equipe4.bin";
-    fichier.open(nomfichier, std::ios::out | std::ios::binary);
-    if (!fichier.is_open()) {
-        std::cout << "Impossible d'ecrire le fichier est deja ouvert " << nomfichier << '\n';
-    } else {
-        std::vector<Pair>::iterator it;
-        for (it = vecteur->begin(); it != vecteur->end(); it++) {
-            int x = it->first;
-            int y = it->second;
-            fichier.write((char *) &x, sizeof(int));
-            fichier.write((char *) &y, sizeof(int));
+void AStar::writeFile(std::vector<Pair> *vector, const std::string& filename) {
+    std::ofstream file;
+    file.open("../output/" + filename + ".bin", std::ios::binary);
+    if (file.is_open()) {
+        for (Pair p: *vector) {
+            file.write((char *) &p.first, sizeof(int));
+            file.write((char *) &p.second, sizeof(int));
         }
-        printf("Ecriture reussie\n");
-        fichier.close();
+        file.close();
+        std::cout << "Ecriture du fichier binaire reussie" << std::endl;
+    } else {
+        std::cout << "Impossible d'ecrire le fichier binaire" << std::endl;
     }
 }

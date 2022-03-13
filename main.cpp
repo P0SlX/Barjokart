@@ -1,37 +1,32 @@
-#include "astar.h"
 #include "toml.hpp"
+#include "astar.h"
 
 int main() {
-    // TODO
-    //  - TOML support for src and dest
-    //  - Use of pointers for A*
+    std::string name;
+    toml::table params;
 
-    /*Pair src = Pair(0, 0);
-    int dest[3] = {255, 0, 0};
-    toml::table tbl;
+    std::cout << "Nom du fichier :";
+    std::cin >> name;
+
     try {
-        tbl = toml::parse_file("../circuit1.toml");
-        int acc_max = tbl["acc_max"].value<int>().value();
-        std::cout << "Acceleration " << acc_max << "\n";
-        auto couleur = tbl["couleur_arrivee"];
-        int r = couleur[0].value<int>().value();
-        int g = couleur[1].value<int>().value();
-        int b = couleur[2].value<int>().value();
-        std::cout << "couleur " << r + " " << g + " " + b << "\n";
-        auto depart = tbl["depart"];
-        int x = depart["x"].value<int>().value();
-        int y = depart["y"].value<int>().value();
-        std::cout << x + " " + y << "\n";
+        params = toml::parse_file("../input/" + name + ".toml");
+    } catch (const std::exception &e) {
+        std::cerr << e.what() << std::endl;
+        return 1;
     }
-    catch (const toml::parse_error &e) {
-        printf("Erreur de chargement\n");
-    }*/
 
-    Pair src = Pair(89, 92);
-    int dest[3] = {255, 0, 0};
-    std::string path = "hills.png";
-    AStar astar(src, dest, path);
-    AStar::writeFile(AStar::speedVector(astar.aStarSearch()));
+    int acc_max = params["acc_max"].value<int>().value();
+    Pair start = {params["depart"]["x"].value<int>().value(), params["depart"]["y"].value<int>().value()};
+    int colors[3] = {params["couleur_arrivee"][0].value<int>().value(),
+                     params["couleur_arrivee"][1].value<int>().value(),
+                     params["couleur_arrivee"][2].value<int>().value()};
+
+    std::cout << "Acceleration max : " << acc_max << std::endl;
+    std::cout << "Coordonnees de depart : {" << start.first << ", " << start.second << "}" << std::endl;
+    std::cout << "Couleur d'arrivee : {" << colors[0] << ", " << colors[1] << ", " << colors[2] << "}" << std::endl;
+
+    AStar aStar(start, colors, name);
+    AStar::writeFile(AStar::speedVector(aStar.aStarSearch()), name);
 
     return 0;
 }
