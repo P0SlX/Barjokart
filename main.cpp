@@ -30,7 +30,6 @@ int main() {
     std::cout << "Couleur d'arrivee : [" << (int) colors[0] << ", " << (int) colors[1] << ", " << (int) colors[2] << "]"
               << std::endl;
 
-
     auto img = new cimg_library::CImg<unsigned char>(imagePath.c_str());
 
     Map *map = new Map(img, colors);
@@ -40,21 +39,21 @@ int main() {
     auto *path = astar.aStarSearch();
 
     if (path == nullptr) {
-        std::cout << "Aucun chemin trouvé" << std::endl;
+        std::cout << "Aucun chemin trouve" << std::endl;
         return 1;
     }
 
     auto *speedVector = astar.nodesToSpeedVector(path);
 
-    std::string outputFilename = "output/" + name + ".bin";
-    AStar::writeFile(*speedVector, outputFilename);
+    AStar::writeFile(*speedVector, "output/" + name + ".bin");
 
     // write path to image (debug)
     for (auto &p: *path) {
         const unsigned char color_mag[] = {170, 0, 255};
         img->draw_point(p->x, p->y, color_mag);
     }
-    img->save("output/debug.png");
+    std::string outputFilename = "output/" + name + ".png";
+    img->save(outputFilename.c_str());
 
     delete map;
     delete speedVector;
