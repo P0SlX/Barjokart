@@ -3,6 +3,9 @@
 Map::Map(cimg_library::CImg<unsigned char> *img, const unsigned char *color_dest) {
     this->img = img;
 
+    std::cout << "Création de la matrice en cours... ";
+    std::cout.flush();
+
     // Initialize the map
     for (int i = 0; i < img->width(); i++) {
         for (int j = 0; j < img->height(); j++) {
@@ -75,6 +78,8 @@ Map::Map(cimg_library::CImg<unsigned char> *img, const unsigned char *color_dest
     x /= (double) this->destinationsNodes.size();
     y /= (double) this->destinationsNodes.size();
     this->destination = getNode((int) x, (int) y);
+
+    std::cout << "Terminé." << std::endl;
 }
 
 

@@ -28,6 +28,11 @@ void AStar::reconstructPath(Node *endNode) {
 }
 
 std::vector<Node *> *AStar::aStarSearch() {
+    std::cout << "A* en cours... ";
+    std::cout.flush();
+    auto start = std::chrono::high_resolution_clock::now();
+
+
     Node *currentNode = this->startNode;
     Node *childNode;
     double f, g, h;
@@ -45,7 +50,11 @@ std::vector<Node *> *AStar::aStarSearch() {
         this->closedList.push_back(currentNode);
 
         if (currentNode->isDestination) {
+            auto stop = std::chrono::high_resolution_clock::now();
+            double duration = (double) duration_cast<std::chrono::microseconds>(stop - start).count();
+            duration /= 1000;
             reconstructPath(currentNode);
+            std::cout << "Terminé en " << duration << "ms." << std::endl;
             return this->path;
         }
 
@@ -101,10 +110,9 @@ void AStar::writeFile(std::vector<Pair> &vector, const std::string &filename) {
             file.write((char *) &p.first, sizeof(int));
             file.write((char *) &p.second, sizeof(int));
         }
-        printf("Ecriture reussie\n");
         file.close();
-        std::cout << "Ecriture du fichier binaire reussie" << std::endl;
+        std::cout << "Écriture du fichier binaire réussie" << std::endl;
     } else {
-        std::cout << "Impossible d'ecrire le fichier binaire" << std::endl;
+        std::cout << "Impossible d'écrire le fichier binaire" << std::endl;
     }
 }

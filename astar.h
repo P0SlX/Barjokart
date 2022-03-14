@@ -8,11 +8,13 @@
 #include <set>
 #include <stack>
 #include <tuple>
-#include "CImg.h"
 #include <fstream>
 #include "string"
 #include <vector>
 #include <bitset>
+#include <chrono>
+
+#include "CImg.h"
 #include "map.h"
 
 class AStar {
