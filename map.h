@@ -21,7 +21,6 @@ public:
 
     void print();
 
-    // !!! Les arguments sont inversés
     Node *getNode(int x, int y) {
         return map[x * img->height() + y];
     }
