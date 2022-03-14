@@ -34,7 +34,7 @@ public:
 
     std::vector<Pair> *nodesToSpeedVector(std::vector<Node *> *nodes);
 
-    static void writeFile(const std::vector<Pair> &vecteur, std::string filename);
+    static void writeFile(std::vector<Pair> &vector, const std::string &filename);
 
     void pushOpen(Node *node) {
         this->openList.push_back(node);

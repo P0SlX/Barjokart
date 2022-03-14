@@ -12,13 +12,11 @@ AStar::~AStar() {
     this->path = nullptr;
 }
 
-
 double AStar::heuristic(Node *node, Node *dest) {
     double x_square = (node->x - dest->x) * (node->x - dest->x);
     double y_square = (node->y - dest->y) * (node->y - dest->y);
     return sqrt(x_square + y_square);
 }
-
 
 void AStar::reconstructPath(Node *endNode) {
     Node *parent = endNode->parent;
@@ -28,7 +26,6 @@ void AStar::reconstructPath(Node *endNode) {
         parent = parent->parent;
     }
 }
-
 
 std::vector<Node *> *AStar::aStarSearch() {
     Node *currentNode = this->startNode;
@@ -87,7 +84,6 @@ std::vector<Node *> *AStar::aStarSearch() {
     return nullptr;
 }
 
-
 std::vector<Pair> *AStar::nodesToSpeedVector(std::vector<Node *> *path) {
     auto *speedVector = new std::vector<Pair>();
     std::reverse(path->begin(), path->end());
@@ -97,20 +93,18 @@ std::vector<Pair> *AStar::nodesToSpeedVector(std::vector<Node *> *path) {
     return speedVector;
 }
 
-
-void AStar::writeFile(const std::vector<Pair> &vecteur, std::string filename) {
-    std::fstream fichier;
-
-    fichier.open(filename, std::ios::out | std::ios::binary);
-
-    if (!fichier.is_open()) {
-        std::cout << "Impossible d'ecrire le fichier est deja ouvert " << filename << '\n';
-    } else {
-        for (Pair p: vecteur) {
-            fichier.write((char *) &p.first, sizeof(int));
-            fichier.write((char *) &p.second, sizeof(int));
+void AStar::writeFile(std::vector<Pair> &vector, const std::string &filename) {
+    std::ofstream file;
+    file.open(filename, std::ios::binary);
+    if (file.is_open()) {
+        for (Pair p: vector) {
+            file.write((char *) &p.first, sizeof(int));
+            file.write((char *) &p.second, sizeof(int));
         }
-        printf("Écriture réussie\n");
-        fichier.close();
+        printf("Ecriture reussie\n");
+        file.close();
+        std::cout << "Ecriture du fichier binaire reussie" << std::endl;
+    } else {
+        std::cout << "Impossible d'ecrire le fichier binaire" << std::endl;
     }
 }
