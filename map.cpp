@@ -74,7 +74,7 @@ Map::Map(cimg_library::CImg<unsigned char> *img, const unsigned char *color_dest
     }
     x /= (double) this->destinationsNodes.size();
     y /= (double) this->destinationsNodes.size();
-    this->destination = getNode((int) y, (int) x);
+    this->destination = getNode((int) x, (int) y);
 }
 
 

@@ -23,12 +23,9 @@ public:
 
     // !!! Les arguments sont inversés
     Node *getNode(int x, int y) {
-        return map[y * img->width() + x];
+        return map[x * img->height() + y];
     }
 
-    bool isValid(int x, int y) {
-        return x >= 0 && x < img->width() && y >= 0 && y < img->height();
-    }
 };
 
 #endif //BARJOKART_MAP_H

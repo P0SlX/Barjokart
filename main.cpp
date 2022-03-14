@@ -51,7 +51,7 @@ int main() {
 
     // write path to image (debug)
     for (auto &p: *path) {
-        const unsigned char color_mag[] = {0, 255, 0};
+        const unsigned char color_mag[] = {170, 0, 255};
         img->draw_point(p->x, p->y, color_mag);
     }
     img->save("output/debug.png");
