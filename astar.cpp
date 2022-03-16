@@ -117,7 +117,6 @@ void AStar::writeFile(std::vector<Pair> &vector, const std::string &filename) {
     }
 }
 
-// check if any vector is a wall
 bool AStar::isVectorValid(const std::vector<Node *> &vector) const {
     for (Node *n: vector) {
         if (n->x < 0 || n->x >= this->map->img->width() || n->y < 0 || n->y >= this->map->img->height() || n->isWall)
@@ -197,6 +196,7 @@ std::vector<Node *> *AStar::lissage_naive(std::vector<Node *> *path) const {
         currentNode = (*path)[tmp_j];
         i = tmp_j;
     }
+    std::reverse(path->begin(), path->end());
     return newPath;
 }
 

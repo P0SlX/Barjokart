@@ -69,6 +69,13 @@ int main() {
     std::cout << "Terminé." << std::endl;
     AStar::writeFile(*speedVector, "output/" + name + ".bin");
 
+    // write path to image (debug)
+    for (auto &p: *path) {
+        const unsigned char color_mag[] = {170, 0, 255};
+        img->draw_point(p->x, p->y, color_mag);
+    }
+    std::string outputFilename = "output/" + name + ".png";
+    img->save(outputFilename.c_str());
 
     delete map;
     delete speedVector;
