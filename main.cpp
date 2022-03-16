@@ -54,13 +54,19 @@ int main() {
     std::vector<std::vector<Node *> *> ptr_paths;
 
     std::cout << "Lissage du chemin... ";
-    for (int i = 0; i < 10; i++) {
+    std::cout.flush();
+    for (int i = 0; i < 5; i++) {
         path = astar.lissage(path);
         ptr_paths.push_back(path);
     }
+
+    // Lissage x2 pour être sur d'avoir le chemin le plus lisse et (on espère) le plus court
+    path = astar.lissage_naive(path);
+    ptr_paths.push_back(path);
+    path = astar.lissage_naive(path);
+    ptr_paths.push_back(path);
     // Après le lissage, on va lisser avec un lissage naif
     // qui va faire la plus grande ligne droite
-    path = astar.lissage_naive(path);
     std::cout << "Terminé." << std::endl;
 
 
@@ -79,7 +85,6 @@ int main() {
 
     delete map;
     delete speedVector;
-    delete path;
 
     for (auto ptr: ptr_paths) {
         delete ptr;
