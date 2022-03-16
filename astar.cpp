@@ -196,7 +196,7 @@ std::vector<Node *> *AStar::lissage_naive(std::vector<Node *> *path) const {
         currentNode = (*path)[tmp_j];
         i = tmp_j;
     }
-    std::reverse(path->begin(), path->end());
+    std::reverse(newPath->begin(), newPath->end());
     return newPath;
 }
 
