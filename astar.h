@@ -38,6 +38,14 @@ public:
 
     static void writeFile(std::vector<Pair> &vector, const std::string &filename);
 
+    bool isVectorValid(const std::vector<Node *> &vector) const;
+
+    std::vector<Node *> bresenham(Node *n1, Node *n2) const;
+
+    std::vector<Node *> *lissage(std::vector<Node *> *path) const;
+
+    std::vector<Node *> *lissage_naive(std::vector<Node *> *path) const;
+
     void pushOpen(Node *node) {
         this->openList.push_back(node);
         std::push_heap(this->openList.begin(), this->openList.end(), compareNodes());

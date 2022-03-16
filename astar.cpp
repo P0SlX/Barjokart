@@ -116,3 +116,131 @@ void AStar::writeFile(std::vector<Pair> &vector, const std::string &filename) {
         std::cout << "Impossible d'écrire le fichier binaire" << std::endl;
     }
 }
+
+// check if any vector is a wall
+bool AStar::isVectorValid(const std::vector<Node *> &vector) const {
+    for (Node *n: vector) {
+        if (n->x < 0 || n->x >= this->map->img->width() || n->y < 0 || n->y >= this->map->img->height() || n->isWall)
+            return false;
+    }
+    return true;
+}
+
+std::vector<Node *> AStar::bresenham(Node *n1, Node *n2) const {
+    std::vector<Node *> nodes;
+    int x1 = n1->x;
+    int y1 = n1->y;
+    int x2 = n2->x;
+    int y2 = n2->y;
+
+    int delta_x(x2 - x1);
+    signed char const ix((delta_x > 0) - (delta_x < 0));
+    delta_x = std::abs(delta_x) << 1;
+
+    int delta_y(y2 - y1);
+    signed char const iy((delta_y > 0) - (delta_y < 0));
+    delta_y = std::abs(delta_y) << 1;
+
+    nodes.push_back(this->map->getNode(x1, y1));
+
+    if (delta_x >= delta_y) {
+        int error(delta_y - (delta_x >> 1));
+
+        while (x1 != x2) {
+            if ((error > 0) || (!error && (ix > 0))) {
+                error -= delta_x;
+                y1 += iy;
+            }
+            error += delta_y;
+            x1 += ix;
+
+            nodes.push_back(this->map->getNode(x1, y1));
+        }
+    } else {
+        int error(delta_x - (delta_y >> 1));
+
+        while (y1 != y2) {
+            if ((error > 0) || (!error && (iy > 0))) {
+                error -= delta_y;
+                x1 += ix;
+            }
+            error += delta_x;
+            y1 += iy;
+
+            nodes.push_back(this->map->getNode(x1, y1));
+        }
+    }
+    return nodes;
+}
+
+std::vector<Node *> *AStar::lissage_naive(std::vector<Node *> *path) const {
+    std::reverse(path->begin(), path->end());
+    auto *newPath = new std::vector<Node *>();
+    newPath->reserve(path->size());
+
+    Node *currentNode = (*path)[0];
+
+    for (int i = 1; i < path->size(); i++) {
+        auto tmp = bresenham(currentNode, (*path)[i]);
+        int tmp_j = i;
+        for (int j = i + 1; j < path->size(); j++) {
+            Node *nextNode = (*path)[j];
+            auto vec_nodes = bresenham(currentNode, nextNode);
+            if (isVectorValid(vec_nodes)) {
+                tmp = vec_nodes;
+                tmp_j = j;
+            }
+        }
+        for (Node *n: tmp) {
+            newPath->push_back(n);
+        }
+        currentNode = (*path)[tmp_j];
+        i = tmp_j;
+    }
+    return newPath;
+}
+
+std::vector<Node *> *AStar::lissage(std::vector<Node *> *path) const {
+    std::reverse(path->begin(), path->end());
+    auto *newPath = new std::vector<Node *>();
+    newPath->reserve(path->size());
+    newPath->push_back((*path)[0]);
+
+    Node *currentNode = (*path)[0];
+    int next_i = 1;
+    for (int i = 1; i < path->size(); i++) {
+        Node *nextNode = (*path)[i];
+
+        // Si le on peut tracer une ligne entre les deux noeuds
+        // alors on essaye sur le suivant sinon on retourne sur le précédent
+        auto vec_nodes = bresenham(currentNode, nextNode);
+        while (isVectorValid(vec_nodes)) {
+            if (next_i + 1 < path->size()) {
+                // On test avec le suivant
+                nextNode = (*path)[next_i + 1];
+                vec_nodes = bresenham(currentNode, nextNode);
+
+                // et on garde une trace de l'indice du noeud
+                next_i++;
+            } else {
+                for (Node *n: vec_nodes) {
+                    newPath->push_back(n);
+                }
+                std::reverse(newPath->begin(), newPath->end());
+                return newPath;
+            }
+        }
+
+        nextNode = (*path)[next_i - 1];
+        vec_nodes = bresenham(currentNode, nextNode);
+
+        // On ajoute les noeuds de la ligne droite dans la nouvelle liste
+        for (Node *n: vec_nodes) {
+            newPath->push_back(n);
+        }
+        i = next_i - 1;
+        currentNode = nextNode;
+    }
+    std::reverse(newPath->begin(), newPath->end());
+    return newPath;
+}
