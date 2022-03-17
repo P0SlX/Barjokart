@@ -25,6 +25,7 @@ void AStar::reconstructPath(Node *endNode) {
         path->push_back(parent);
         parent = parent->parent;
     }
+    std::reverse(path->begin(), path->end());
 }
 
 std::vector<Node *> *AStar::aStarSearch() {
@@ -95,7 +96,6 @@ std::vector<Node *> *AStar::aStarSearch() {
 
 std::vector<Pair> *AStar::nodesToSpeedVector(std::vector<Node *> *path) {
     auto *speedVector = new std::vector<Pair>();
-    std::reverse(path->begin(), path->end());
     for (int k = 0; k < path->size() - 1; k++) {
         speedVector->emplace_back((*path)[k + 1]->x - (*path)[k]->x, (*path)[k + 1]->y - (*path)[k]->y);
     }
@@ -173,7 +173,6 @@ std::vector<Node *> AStar::bresenham(Node *n1, Node *n2) const {
 }
 
 std::vector<Node *> *AStar::lissage_naive(std::vector<Node *> *path) const {
-    std::reverse(path->begin(), path->end());
     auto *newPath = new std::vector<Node *>();
     newPath->reserve(path->size());
 
@@ -196,12 +195,10 @@ std::vector<Node *> *AStar::lissage_naive(std::vector<Node *> *path) const {
         currentNode = (*path)[tmp_j];
         i = tmp_j;
     }
-    std::reverse(newPath->begin(), newPath->end());
     return newPath;
 }
 
 std::vector<Node *> *AStar::lissage(std::vector<Node *> *path) const {
-    std::reverse(path->begin(), path->end());
     auto *newPath = new std::vector<Node *>();
     newPath->reserve(path->size());
     newPath->push_back((*path)[0]);
@@ -226,7 +223,6 @@ std::vector<Node *> *AStar::lissage(std::vector<Node *> *path) const {
                 for (Node *n: vec_nodes) {
                     newPath->push_back(n);
                 }
-                std::reverse(newPath->begin(), newPath->end());
                 return newPath;
             }
         }
@@ -241,6 +237,5 @@ std::vector<Node *> *AStar::lissage(std::vector<Node *> *path) const {
         i = next_i - 1;
         currentNode = nextNode;
     }
-    std::reverse(newPath->begin(), newPath->end());
     return newPath;
 }
