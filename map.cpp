@@ -1,7 +1,8 @@
 #include "map.h"
 
-Map::Map(cimg_library::CImg<unsigned char> *img, const unsigned char *color_dest) {
+Map::Map(cimg_library::CImg<unsigned char> *img, const unsigned char *color_dest, int acc_max) {
     this->img = img;
+    this->acc_max = acc_max;
 
     std::cout << "Création de la matrice en cours... ";
     std::cout.flush();
@@ -19,8 +20,12 @@ Map::Map(cimg_library::CImg<unsigned char> *img, const unsigned char *color_dest
                 this->destinationsNodes.push_back(node);
             }
 
-            // Si c'est un mur
-            if (img->atXY(i, j, 0) == 0 && img->atXY(i, j, 1) == 0 && img->atXY(i, j, 2) == 0) {
+            else if (img->atXY(i, j, 0) < 100  && img->atXY(i, j, 1) == 255 && img->atXY(i, j, 2) < 100) {
+                // Point vert de départ qui n'est pas tout le temps là et pas tout le temps de la même couleur...
+                continue;
+            }
+
+            else if (img->atXY(i, j, 0) <= 240 && img->atXY(i, j, 1) <= 240 && img->atXY(i, j, 2) <= 240) {
                 node->isWall = true;
             }
         }

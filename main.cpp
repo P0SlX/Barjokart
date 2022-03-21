@@ -35,7 +35,7 @@ int main() {
     auto img = new cimg_library::CImg<unsigned char>(imagePath.c_str());
 
     // On crée la matrice
-    Map *map = new Map(img, colors);
+    Map *map = new Map(img, colors, acc_max);
 //    map->print();
 
     // On crée l'objet A* et on lui passe la matrice et les coordonnées de départ
@@ -60,26 +60,30 @@ int main() {
         ptr_paths.push_back(path);
     }
 
-    // Lissage x2 pour être sur d'avoir le chemin le plus lisse et (on espère) le plus court
-    path = astar.lissage_naive(path);
-    ptr_paths.push_back(path);
-    path = astar.lissage_naive(path);
-    ptr_paths.push_back(path);
+    // Lissage x3 pour être sur d'avoir le chemin le plus lisse et (on espère) le plus court
+    for (int i = 0; i < 3; i++) {
+        path = astar.lissage_naive(path);
+        ptr_paths.push_back(path);
+    }
+
     // Après le lissage, on va lisser avec un lissage naif
     // qui va faire la plus grande ligne droite
     std::cout << "Terminé." << std::endl;
 
 
+    std::cout << "Accélération du chemin en cours... ";
+    std::cout.flush();
+    path = astar.acceleration(path);
+    std::cout << "Terminé." << std::endl;
+
+
     std::cout << "Transformation des noeuds en vecteur vitesse... ";
-    auto *speedVector = astar.nodesToSpeedVector(path);
+    std::cout.flush();
+    auto *speedVector = AStar::nodesToSpeedVector(path);
     std::cout << "Terminé." << std::endl;
     AStar::writeFile(*speedVector, "output/" + name + ".bin");
 
     // write path to image (debug)
-    for (auto &p: *path) {
-        const unsigned char color_mag[] = {170, 0, 255};
-        img->draw_point(p->x, p->y, color_mag);
-    }
     std::string outputFilename = "output/" + name + ".png";
     img->save(outputFilename.c_str());
 

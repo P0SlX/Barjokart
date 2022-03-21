@@ -13,9 +13,9 @@ public:
     cimg_library::CImg<unsigned char> *img;
     Node *destination;
     std::vector<Node *> destinationsNodes;
+    int acc_max;
 
-
-    Map(cimg_library::CImg<unsigned char> *img, const unsigned char *color_dest);
+    Map(cimg_library::CImg<unsigned char> *img, const unsigned char *color_dest, int acc_max);
 
     ~Map();
 

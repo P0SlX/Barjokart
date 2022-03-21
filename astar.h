@@ -28,13 +28,13 @@ public:
 
     ~AStar();
 
-    void reconstructPath(Node *endNode);
+    void reconstructPath(Node *endNode) const;
 
-    double heuristic(Node *node, Node *dest);
+    static double heuristic(Node *node, Node *dest);
 
     std::vector<Node *> *aStarSearch();
 
-    std::vector<Pair> *nodesToSpeedVector(std::vector<Node *> *nodes);
+    static std::vector<Pair> *nodesToSpeedVector(std::vector<Node *> *nodes);
 
     static void writeFile(std::vector<Pair> &vector, const std::string &filename);
 
@@ -42,9 +42,13 @@ public:
 
     std::vector<Node *> bresenham(Node *n1, Node *n2) const;
 
+    std::vector<Node *> bresenham2(Node *n1, Node *n2) const;
+
     std::vector<Node *> *lissage(std::vector<Node *> *path) const;
 
     std::vector<Node *> *lissage_naive(std::vector<Node *> *path) const;
+
+    std::vector<Node *> *acceleration(std::vector<Node *> *path) const;
 
     void pushOpen(Node *node) {
         this->openList.push_back(node);
