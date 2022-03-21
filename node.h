@@ -42,30 +42,6 @@ public:
     void setHeuristic(int h) {
         this->h = h;
     }
-
-    bool operator==(const Node &other) const {
-        return (x == other.x && y == other.y);
-    }
-
-    bool operator!=(const Node &other) const {
-        return !(*this == other);
-    }
-
-    bool operator<(const Node &other) const {
-        return (f < other.f);
-    }
-
-    bool operator>(const Node &other) const {
-        return (f > other.f);
-    }
-
-    bool operator<=(const Node &other) const {
-        return (f <= other.f);
-    }
-
-    bool operator>=(const Node &other) const {
-        return (f >= other.f);
-    }
 };
 
 

@@ -9,6 +9,8 @@ int main() {
     std::cin >> name;
     std::string imagePath = prefix + name + ".png";
 
+
+    // ----- Parsing du fichier TOML -----
     try {
         params = toml::parse_file(prefix + name + ".toml");
     } catch (const std::exception &e) {
@@ -36,6 +38,8 @@ int main() {
 
     // On crée la matrice
     Map *map = new Map(img, colors, acc_max);
+
+    // Pour les petites images (100x100), ont peut les affichers dans le terminal pour debug
 //    map->print();
 
     // On crée l'objet A* et on lui passe la matrice et les coordonnées de départ
@@ -52,23 +56,25 @@ int main() {
 
     // Nécessaire pour free les chemins précédents
     std::vector<std::vector<Node *> *> ptr_paths;
+    ptr_paths.reserve(5);
 
     std::cout << "Lissage du chemin... ";
     std::cout.flush();
-    for (int i = 0; i < 5; i++) {
+    // Lissage x5 pour être sûr d'avoir un chemin lisse et (on espère) le plus court
+    for (int i = 0; i < 3; i++) {
         path = astar.lissage(path);
         ptr_paths.push_back(path);
-    }
-
-    // Lissage x3 pour être sur d'avoir le chemin le plus lisse et (on espère) le plus court
-    for (int i = 0; i < 3; i++) {
         path = astar.lissage_naive(path);
         ptr_paths.push_back(path);
     }
-
-    // Après le lissage, on va lisser avec un lissage naif
-    // qui va faire la plus grande ligne droite
     std::cout << "Terminé." << std::endl;
+
+
+    // On grave le chemin dans l'image
+    unsigned char color_mag[] = {255, 0, 255};
+    for (Node *n: *path) {
+        img->draw_point(n->x, n->y, color_mag);
+    }
 
 
     std::cout << "Accélération du chemin en cours... ";
@@ -81,12 +87,19 @@ int main() {
     std::cout.flush();
     auto *speedVector = AStar::nodesToSpeedVector(path);
     std::cout << "Terminé." << std::endl;
-    AStar::writeFile(*speedVector, "output/" + name + ".bin");
 
-    // write path to image (debug)
+
+    std::cout << "Ecriture du fichier de sortie... ";
+    std::cout.flush();
+    AStar::writeFile(*speedVector, "output/" + name + ".bin");
+    std::cout << "Terminé." << std::endl;
+
+
+    // On écrit l'image dans un fichier .png
     std::string outputFilename = "output/" + name + ".png";
     img->save(outputFilename.c_str());
 
+    // On libère la mémoire
     delete map;
     delete speedVector;
 
