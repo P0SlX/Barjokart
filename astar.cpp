@@ -109,15 +109,20 @@ std::vector<Node *> *AStar::aStarSearch() {
 }
 
 std::vector<Pair> *AStar::nodesToSpeedVector(std::vector<Node *> *path) {
+    std::cout << "Transformation des noeuds en vecteur vitesse... ";
+    std::cout.flush();
     // Transforme le chemin en un vecteur de vitesse pour l'écrire dans le fichier par la suite
     auto *speedVector = new std::vector<Pair>();
     for (int k = 0; k < path->size() - 1; k++) {
         speedVector->emplace_back((*path)[k + 1]->x - (*path)[k]->x, (*path)[k + 1]->y - (*path)[k]->y);
     }
+    std::cout << "Terminé." << std::endl;
     return speedVector;
 }
 
 void AStar::writeFile(std::vector<Pair> &vector, const std::string &filename) {
+    std::cout << "Ecriture du fichier de sortie... ";
+    std::cout.flush();
     std::ofstream file;
     file.open(filename, std::ios::binary);
     if (file.is_open()) {
@@ -127,6 +132,7 @@ void AStar::writeFile(std::vector<Pair> &vector, const std::string &filename) {
             file.write((char *) &p.second, sizeof(int));
         }
         file.close();
+        std::cout << "Terminé." << std::endl;
     } else {
         std::cout << "Impossible d'écrire le fichier binaire" << std::endl;
     }
@@ -471,6 +477,8 @@ std::vector<Node *> *AStar::acceleration(std::vector<Node *> *vecPath) const {
     // Une fois le chemin optimisé il faut s'attaquer à la vitesse du kart
     // Pour cela, on va essayer de trouver la plus grande vitesse possible
     // entre 2 noeuds du chemin
+    std::cout << "Accélération du chemin en cours... ";
+    std::cout.flush();
 
     auto *newPath = new std::vector<Node *>();
     Node *currentNode = (*vecPath)[0];
@@ -503,5 +511,6 @@ std::vector<Node *> *AStar::acceleration(std::vector<Node *> *vecPath) const {
             }
         }
     }
+    std::cout << "Terminé." << std::endl;
     return newPath;
 }

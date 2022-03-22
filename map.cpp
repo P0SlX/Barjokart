@@ -1,6 +1,7 @@
 #include "map.h"
 
 Map::Map(cimg_library::CImg<unsigned char> *img, const unsigned char *color_dest, int acc_max) {
+    auto start = std::chrono::high_resolution_clock::now();
     this->img = img;
     this->acc_max = acc_max;
 
@@ -20,12 +21,8 @@ Map::Map(cimg_library::CImg<unsigned char> *img, const unsigned char *color_dest
                 this->destinationsNodes.push_back(node);
             }
 
-            else if (img->atXY(i, j, 0) < 100  && img->atXY(i, j, 1) == 255 && img->atXY(i, j, 2) < 100) {
-                // Point vert de départ qui n'est pas tout le temps là et pas tout le temps de la même couleur...
-                continue;
-            }
-
-            else if (img->atXY(i, j, 0) <= 240 && img->atXY(i, j, 1) <= 240 && img->atXY(i, j, 2) <= 240) {
+            // Si c'est un mur
+            if (img->atXY(i, j, 0) == 0 && img->atXY(i, j, 1) == 0 && img->atXY(i, j, 2) == 0) {
                 node->isWall = true;
             }
         }
@@ -84,7 +81,10 @@ Map::Map(cimg_library::CImg<unsigned char> *img, const unsigned char *color_dest
     y /= (double) this->destinationsNodes.size();
     this->destination = getNode((int) x, (int) y);
 
-    std::cout << "Terminé." << std::endl;
+    auto stop = std::chrono::high_resolution_clock::now();
+    double duration = (double) duration_cast<std::chrono::microseconds>(stop - start).count();
+    duration /= 1000;
+    std::cout << "Terminé en " << duration << "ms." << std::endl;
 }
 
 

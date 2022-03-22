@@ -3,6 +3,7 @@
 
 #include "CImg.h"
 #include <iostream>
+#include <chrono>
 #include "node.h"
 
 typedef std::pair<int, int> Pair;

@@ -77,27 +77,18 @@ int main() {
     }
 
 
-    std::cout << "Accélération du chemin en cours... ";
-    std::cout.flush();
     path = astar.acceleration(path);
-    std::cout << "Terminé." << std::endl;
 
-
-    std::cout << "Transformation des noeuds en vecteur vitesse... ";
-    std::cout.flush();
     auto *speedVector = AStar::nodesToSpeedVector(path);
-    std::cout << "Terminé." << std::endl;
 
-
-    std::cout << "Ecriture du fichier de sortie... ";
-    std::cout.flush();
     AStar::writeFile(*speedVector, "output/" + name + ".bin");
-    std::cout << "Terminé." << std::endl;
 
 
     // On écrit l'image dans un fichier .png
     std::string outputFilename = "output/" + name + ".png";
     img->save(outputFilename.c_str());
+
+    std::cout << "Score Barjokart : " << 10000 - speedVector->size() + 1 << std::endl;
 
     // On libère la mémoire
     delete map;
