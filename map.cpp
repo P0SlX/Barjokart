@@ -8,7 +8,7 @@ Map::Map(cimg_library::CImg<unsigned char> *img, const unsigned char *color_dest
     std::cout << "Création de la matrice en cours... ";
     std::cout.flush();
 
-    // Initialize the map
+    // Initialise la map
     for (int i = 0; i < img->width(); i++) {
         for (int j = 0; j < img->height(); j++) {
             Node *node = new Node(i, j);
@@ -28,7 +28,7 @@ Map::Map(cimg_library::CImg<unsigned char> *img, const unsigned char *color_dest
         }
     }
 
-    // Set the neighbors of each node
+    // Met les voisins de chaque noeuds
     for (int i = 0; i < img->width(); i++) {
         for (int j = 0; j < img->height(); j++) {
             Node *node = getNode(i, j);
