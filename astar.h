@@ -40,6 +40,15 @@ public:
 
     std::vector<Node *> *acceleration(std::vector<Node *> *vecPath) const;
 
+    std::vector<Pair> *cutting (std::vector<Pair> &path);
+
+    std::vector<Pair> *acceleration2(std::vector<Pair> &path,std::vector<Pair> &vecteur2 ,int acceleration_max);
+
+
+
+
+
+
     // Push sur la liste openList et sur la pile
     void pushOpen(Node *node) {
         this->openList.push_back(node);
