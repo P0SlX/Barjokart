@@ -514,234 +514,191 @@ std::vector<Node *> *AStar::acceleration(std::vector<Node *> *vecPath) const {
     std::cout << "Terminé." << std::endl;
     return newPath;
 }
+
 //Cette fonction va nous donner toutes les différentes trajectoires avec le resultat d'escargot
-std::vector<Pair> *AStar::cutting (std::vector<Pair> &path) {
-    int vx;
-    int vy;
-    int vx2;
-    int vy2;
+std::vector<Pair> *AStar::cutting(std::vector<Pair> &vectorPath) {
+    int vx, vy, vx2, vy2;
 
-    auto *vecteur2=  new std::vector<Pair>;
-    for (int k = 0 ; k < path.size() ; k++) {
-           vx = path.at(k).first;
-          vy = path.at(k).second;
-        if (k < path.size() ) {
-            vx2 = path.at(k + 1).first;
-            vy2 = path.at(k + 1).second;
+    auto *vecteur2 = new std::vector<Pair>;
+    for (int k = 0; k < vectorPath.size() -1; k++) {
+        vx = vectorPath.at(k).first;
+        vy = vectorPath.at(k).second;
+
+        if (k < vectorPath.size()) {
+            vx2 = vectorPath.at(k + 1).first;
+            vy2 = vectorPath.at(k + 1).second;
         }
-        int debut=k;
+
+        int debut = k;
         int fin;
-        bool d=true;
-        while (d && k < path.size()) {
-            if (vx != vx2 or vy != vy2 ){ //Si les vecteurs vitesses sont différents cela signifie qu'il y a un changement de trajectoire
+        bool d = true;
+        while (d && k < vectorPath.size()) {
+            //Si les vecteurs vitesses sont différents cela signifie qu'il y a un changement de trajectoire
+            if (vx != vx2 or vy != vy2) {
                 fin++;
-                d= false;
-            }
-            else{
-                fin=k+1;
-                vx=vx2;
-                vy=vy2;
+                d = false;
+            } else {
+                fin = k + 1;
+                vx = vx2;
+                vy = vy2;
                 k++;
-                if (k+1 < path.size() ) {
-                    vx2 = path.at(k + 1).first;
-                    vy2 = path.at(k + 1).second;}
-                else{ d= false;}
+                if (k + 1 < vectorPath.size()) {
+                    vx2 = vectorPath.at(k + 1).first;
+                    vy2 = vectorPath.at(k + 1).second;
+                } else { d = false; }
             }
         }
-        if(k+1==path.size()){
+
+        if (k + 1 == vectorPath.size())
             fin++;
-        }
 
-        Pair *pair=new Pair(debut,fin);
-        vecteur2->push_back(*pair);
+        vecteur2->emplace_back(debut,fin);
     }
-
     return vecteur2;
 }
 
 
-//le but de cette fonction est de calculer des accelerations  sur les différentes trajectoire
-std::vector<Pair> *AStar::acceleration2(std::vector<Pair> &path,std::vector<Pair> &vecteur2, int acceleration_max) {
+std::vector<Pair> *AStar::acceleration2(std::vector<Pair> &vectorPath, std::vector<Pair> &vecteur2) {
+    // Calculer les accelerations sur les différentes trajectoires
 
     auto *v = new std::vector<Pair>();
-    int vitesse=0;
-    int longueur;
-    int vitessedefin;
-    int reste;
-    int positionreste;
-    int valeurreele;
-    int accel=acceleration_max;
-    int Vx2;
-    int Vy2;
-    int x;
-    int y;
-    int deb;
-    int fi;
+    int vitesse = 0;
+    int longueur, vitessedefin, reste, valeurreele, Vx2, Vy2, deb, fi;
+    int accel = this->map->acc_max;
 
-
-
-    for (int n = 0 ; n < vecteur2.size() ; n++) {
+    for (int n = 0; n < vecteur2.size(); n++) {
         deb = vecteur2.at(n).first;
         fi = vecteur2.at(n).second;
-        std::vector deniervect= std::vector<int>();
-        Vx2=0;
-        Vy2=0;
+        std::vector deniervect = std::vector<int>();
+        Vx2 = 0;
+        Vy2 = 0;
         int co;
         int ar;
-        if (n+1!=vecteur2.size()){
+        if (n + 1 != vecteur2.size()) {
             int fi2 = vecteur2.at(n).second;
-            int deb2 = vecteur2.at(n+1).first;
-            if(fi2!=deb2){
-                fi=deb2;
-            }
+            int deb2 = vecteur2.at(n + 1).first;
+            if (fi2 != deb2)
+                fi = deb2;
         }
-        int somme= fi-deb ;
-        if(path.at(deb).first!=0 && path.at(deb).second!=0 ){
-            acceleration_max=accel/2;
-        }
-        else{
-            acceleration_max=accel;
 
-        }
-        if (somme<=acceleration_max){
+        int somme = fi - deb;
+        if (vectorPath.at(deb).first != 0 && vectorPath.at(deb).second != 0)
+            this->map->acc_max = accel / 2;
+        else
+            this->map->acc_max = accel;
+
+        if (somme <= this->map->acc_max) {
             deniervect.push_back(somme);
-            vitessedefin=somme;
-        }
-        else{
-
-            if(vitesse!=0){
-                deniervect.push_back(acceleration_max-valeurreele);
-                vitesse=0;
-                somme=somme-(acceleration_max-valeurreele);
+            vitessedefin = somme;
+        } else {
+            if (vitesse != 0) {
+                deniervect.push_back(this->map->acc_max - valeurreele);
+                vitesse = 0;
+                somme = somme - (this->map->acc_max - valeurreele);
             }
-            if (n+1==vecteur2.size()){
-                int total=acceleration_max;
+            if (n + 1 == vecteur2.size()) {
+                int total = this->map->acc_max;
 
-                while(0<somme){
-
-                    somme=somme-total;
+                while (0 < somme) {
+                    somme = somme - total;
                     deniervect.push_back(total);
-                    total=total+acceleration_max;
+                    total = total + this->map->acc_max;
                 }
 
-            }
-            else{
-                int deb2=vecteur2.at(n+1).first;
-                int somme2=vecteur2.at(n+1).second-vecteur2.at(n+1).first;
-                if(path.at(deb2).first!=0 and path.at(deb2).second!=0){ //il
-                    if (somme2 < acceleration_max) {
-                        vitessedefin = acceleration_max ;
+            } else {
+                int deb2 = vecteur2.at(n + 1).first;
+                int somme2 = vecteur2.at(n + 1).second - vecteur2.at(n + 1).first;
+                if (vectorPath.at(deb2).first != 0 and vectorPath.at(deb2).second != 0) {
+                    if (somme2 < this->map->acc_max) {
+                        vitessedefin = this->map->acc_max;
                         longueur = somme - vitessedefin;
-                        reste = longueur % acceleration_max ;
+                        reste = longueur % this->map->acc_max;
                     } else {
-                        vitessedefin = somme2 / 2 + acceleration_max /2;
+                        vitessedefin = somme2 / 2 + this->map->acc_max / 2;
                         longueur = somme - vitessedefin;
-                        reste = longueur % acceleration_max;
+                        reste = longueur % this->map->acc_max;
                     }
-                }
-                else {
-                        vitessedefin = acceleration_max;
-                        longueur = somme - vitessedefin;
-                        reste = longueur % acceleration_max ;
+                } else {
+                    vitessedefin = this->map->acc_max;
+                    longueur = somme - vitessedefin;
+                    reste = longueur % this->map->acc_max;
                 }
 
-                positionreste=deniervect.size();
                 longueur=longueur-reste;
-                //Cela permet de savoir quand on accelere ou on ralentit dans une trajectoire avec l'acceleration maximale
-                //les accelerations vont être mit dans un vecteur vitesses qui se nomme deniervecteur
-                while(longueur!=0){
-                    if(longueur/3+acceleration_max>= vitesse+acceleration_max and (longueur-(vitesse+acceleration_max)>=vitesse)or (longueur-(vitesse+acceleration_max)==0 and  vitesse+acceleration_max<= vitessedefin)){
-                        vitesse=vitesse+acceleration_max;
-                        longueur=longueur-vitesse;
-                    }
-                    else if(longueur>=vitesse){
-                        if (longueur-vitesse<=vitesse  && (longueur-vitesse)-vitesse<=(acceleration_max)){
-                            if (longueur-vitesse==0 and vitesse-vitessedefin>(acceleration_max)){
-                                vitesse=vitesse-acceleration_max;
-                                longueur=longueur-vitesse;
-                            }
-                            else if((longueur-vitesse>=vitesse-acceleration_max and longueur/vitesse-accel>=2) or (longueur-vitesse ==0 and vitesse-vitessedefin<=accel)){
-                                longueur=longueur-vitesse;
-                            }
-                            else if (vitesse-acceleration_max!=0){
-                                vitesse=vitesse-acceleration_max;
-                                longueur=longueur-vitesse;
-                            }
-                            else{
-                                longueur=longueur-vitesse;
-                            }
-                        }
-                        else{
-                            vitesse=vitesse-acceleration_max;
-                            longueur=longueur-vitesse;
-                        }
-                    }
-                    else if(longueur>=vitesse-acceleration_max and vitesse-acceleration_max>0){
-                        vitesse=vitesse-acceleration_max;
-                        longueur=longueur-vitesse;
+                // Cela permet de savoir quand on accelere ou on ralentit dans une trajectoire avec l'acceleration maximale
+                // les accelerations vont être mit dans un vecteur vitesses qui se nomme deniervecteur
+                while (longueur != 0) {
+                    if (longueur / 3 + this->map->acc_max >= vitesse + this->map->acc_max and
+                        (longueur - (vitesse + this->map->acc_max) >= vitesse) or
+                        (longueur - (vitesse + this->map->acc_max) == 0 and vitesse + this->map->acc_max <= vitessedefin)) {
+                        vitesse = vitesse + this->map->acc_max;
+                        longueur = longueur - vitesse;
+                    } else if (longueur >= vitesse) {
+                        if (longueur - vitesse <= vitesse && (longueur - vitesse) - vitesse <= (this->map->acc_max)) {
+                            if (longueur - vitesse == 0 and vitesse - vitessedefin > (this->map->acc_max)) {
+                                vitesse = vitesse - this->map->acc_max;
+                                longueur = longueur - vitesse;
+                            } else if ((longueur - vitesse >= vitesse - this->map->acc_max and
+                                        longueur / vitesse - accel >= 2) or
+                                       (longueur - vitesse == 0 and vitesse - vitessedefin <= accel)) {
+                                longueur = longueur - vitesse;
+                            } else if (vitesse - this->map->acc_max != 0) {
+                                vitesse = vitesse - this->map->acc_max;
+                                longueur = longueur - vitesse;
+                            } else
+                                longueur = longueur - vitesse;
 
-                    }
-                    else{
-                        vitesse=longueur;
-                        longueur=0;
+                        } else {
+                            vitesse = vitesse - this->map->acc_max;
+                            longueur = longueur - vitesse;
+                        }
+                    } else if (longueur >= vitesse - this->map->acc_max and vitesse - this->map->acc_max > 0) {
+                        vitesse = vitesse - this->map->acc_max;
+                        longueur = longueur - vitesse;
+                    } else {
+                        vitesse = longueur;
+                        longueur = 0;
                     }
                     deniervect.push_back(vitesse);
                 }
                 deniervect.push_back(vitessedefin);
-                if(deniervect.size()>=3) {
+                if (deniervect.size() >= 3) {
+                    int chif1 = deniervect.at(deniervect.size() - 3);
 
-                   int chif1 = deniervect.at(deniervect.size() - 3);
-                   if (abs((chif1 + reste) - vitesse) <= acceleration_max and
-                       abs(vitessedefin - (chif1 + reste)) <= acceleration_max) {
-                       deniervect.at(deniervect.size() - 2) = deniervect.at(deniervect.size() - 2) + reste;
-                   } else {
-                       deniervect.push_back(reste);
-                   }
-               }
-
+                    if (abs((chif1 + reste) - vitesse) <= this->map->acc_max and
+                        abs(vitessedefin - (chif1 + reste)) <= this->map->acc_max) {
+                        deniervect.at(deniervect.size() - 2) = deniervect.at(deniervect.size() - 2) + reste;
+                    } else
+                        deniervect.push_back(reste);
+                }
             }
+        }
 
-        }
-        if(acceleration_max==accel/2){
-            valeurreele=vitessedefin*2;
-        }
-        else{
-            valeurreele=vitessedefin;
-        }
-        co=deb;
-        for (int p=0;p <deniervect.size();p++) { //il va se servir du vecteur deniervecteur qui possède les différentes accelerations.
-            ar=co+deniervect.at(p);
-            Vx2=0;
-            Vy2=0;
-            for (int i = co; i < ar; i++) { //On fait une boucle sur les qui rajoute les vecteurs vitesses obtenu d'escagot de la longueur obtenu par deniervecteur.
-               if(ar<path.size()) {
-                Vx2 += path.at(i).first;
-                Vy2 += path.at(i).second;}
-               else{
-                   Vx2 += path.at(path.size()-1).first;
-                   Vx2 += path.at(path.size()-1).second;
-               }
+        if (this->map->acc_max == accel / 2)
+            valeurreele = vitessedefin * 2;
+        else
+            valeurreele = vitessedefin;
+
+        co = deb;
+        //il va se servir du vecteur deniervecteur qui possède les différentes accelerations.
+        for (int p : deniervect) {
+            ar = co + p;
+            Vx2 = 0;
+            Vy2 = 0;
+            // On fait une boucle sur les qui rajoute les vecteurs vitesses obtenu d'escagot de la longueur obtenu par deniervecteur.
+            for (int i = co; i < ar; i++) {
+                if (ar < vectorPath.size()) {
+                    Vx2 += vectorPath.at(i).first;
+                    Vy2 += vectorPath.at(i).second;
+                } else {
+                    Vx2 += vectorPath.at(vectorPath.size() - 1).first;
+                    Vx2 += vectorPath.at(vectorPath.size() - 1).second;
+                }
             }
-            co=ar;
-            Pair *pair4=new Pair(Vx2,Vy2); //Cela donne les un vecteur vitesse avec l'utilisation de l'acceleration qu'on rajoute dans un vecteur.
-            v->push_back(*pair4);
+            co = ar;
+            // Cela donne les un vecteur vitesse avec l'utilisation de l'acceleration qu'on rajoute dans un vecteur.
+            v->emplace_back(Vx2, Vy2);
         }
-
     }
-    std::cout<< 10001-v->size()<<"\n";
     return v;
-
-
 }
-
-
-
-
-
-
-
-
-
-
-
-
