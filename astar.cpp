@@ -516,6 +516,7 @@ std::vector<Node *> *AStar::acceleration(std::vector<Node *> *vecPath) const {
 }
 
 //Cette fonction va nous donner toutes les différentes trajectoires avec le resultat d'escargot
+//Grace au vecteur vitesse nous pouvons savoir quand il y a un changement de trajectoire.
 std::vector<Pair> *AStar::cutting(std::vector<Pair> &vectorPath) {
     int vx, vy, vx2, vy2;
 
@@ -552,6 +553,7 @@ std::vector<Pair> *AStar::cutting(std::vector<Pair> &vectorPath) {
         if (k + 1 == vectorPath.size())
             fin++;
 
+        //Nous avons ici la position dans VecteurPath du debut de la trajectoire jusqu'a la fin
         vecteur2->emplace_back(debut,fin);
     }
     return vecteur2;
@@ -580,35 +582,35 @@ std::vector<Pair> *AStar::acceleration2(std::vector<Pair> &vectorPath, std::vect
             if (fi2 != deb2)
                 fi = deb2;
         }
-
-        int somme = fi - deb;
+        int somme = fi - deb;//C'est  la longueur de la trajectoire
         if (vectorPath.at(deb).first != 0 && vectorPath.at(deb).second != 0)
             this->map->acc_max = accel / 2;
         else
             this->map->acc_max = accel;
 
+        //si la somme est plus petit ou egal à l'acceleration alors cela veut dire qu'on peut faire la trajectoire en 1 seul coup et donc on met tout la somme
         if (somme <= this->map->acc_max) {
             deniervect.push_back(somme);
             vitessedefin = somme;
         } else {
-            if (vitesse != 0) {
+            if (vitesse != 0) { //Si la vitesse est différente de zero alors on doit reduire cette l'acceleration par la vitesse pour eviter une tête à queue pour le premier vecteur vitesse de cette trajectoire
                 deniervect.push_back(this->map->acc_max - valeurreele);
                 vitesse = 0;
                 somme = somme - (this->map->acc_max - valeurreele);
             }
+            //Si nous sommes au la dernière trajectoire donc nous pouvons accelerer.
             if (n + 1 == vecteur2.size()) {
                 int total = this->map->acc_max;
-
                 while (0 < somme) {
                     somme = somme - total;
                     deniervect.push_back(total);
                     total = total + this->map->acc_max;
                 }
-
             } else {
+                //là c'est quand nous avons une trajectoire et qu'on doit gerer l'acceleration
                 int deb2 = vecteur2.at(n + 1).first;
                 int somme2 = vecteur2.at(n + 1).second - vecteur2.at(n + 1).first;
-                if (vectorPath.at(deb2).first != 0 and vectorPath.at(deb2).second != 0) {
+                if (vectorPath.at(deb2).first != 0 and vectorPath.at(deb2).second != 0) { //Si nous sommes dans une diagonale donc nous avancons sur X et Y donc on devise l'acceleration par 2
                     if (somme2 < this->map->acc_max) {
                         vitessedefin = this->map->acc_max;
                         longueur = somme - vitessedefin;
@@ -628,21 +630,21 @@ std::vector<Pair> *AStar::acceleration2(std::vector<Pair> &vectorPath, std::vect
                 // Cela permet de savoir quand on accelere ou on ralentit dans une trajectoire avec l'acceleration maximale
                 // les accelerations vont être mit dans un vecteur vitesses qui se nomme deniervecteur
                 while (longueur != 0) {
-                    if (longueur / 3 + this->map->acc_max >= vitesse + this->map->acc_max and
-                        (longueur - (vitesse + this->map->acc_max) >= vitesse) or
+                    if (longueur / 3 + this->map->acc_max >= vitesse + this->map->acc_max and //Ces  condtions ont pour but qu'on accelerer mais que se soit toujours possible de reduire la vitesse sans faire de tete à queue.
+                        (longueur - (vitesse + this->map->acc_max) >= vitesse) or // On accelerer tant que la longueur diviser3 +acceleration map sont plus grand vitesse et que la longueur -vitesse de l'acceleration soit plus grand que la vitesse
                         (longueur - (vitesse + this->map->acc_max) == 0 and vitesse + this->map->acc_max <= vitessedefin)) {
                         vitesse = vitesse + this->map->acc_max;
                         longueur = longueur - vitesse;
-                    } else if (longueur >= vitesse) {
+                    } else if (longueur >= vitesse) { //Si la longueur est toujours plus grand que la vitesse
                         if (longueur - vitesse <= vitesse && (longueur - vitesse) - vitesse <= (this->map->acc_max)) {
                             if (longueur - vitesse == 0 and vitesse - vitessedefin > (this->map->acc_max)) {
                                 vitesse = vitesse - this->map->acc_max;
                                 longueur = longueur - vitesse;
-                            } else if ((longueur - vitesse >= vitesse - this->map->acc_max and
+                            } else if ((longueur - vitesse >= vitesse - this->map->acc_max and //Ces conditions ont pour but que garde toujours la même vitesse
                                         longueur / vitesse - accel >= 2) or
                                        (longueur - vitesse == 0 and vitesse - vitessedefin <= accel)) {
                                 longueur = longueur - vitesse;
-                            } else if (vitesse - this->map->acc_max != 0) {
+                            } else if (vitesse - this->map->acc_max != 0) { //Cette condition à pour but d'eviter une vitesse de 0 si on reduit
                                 vitesse = vitesse - this->map->acc_max;
                                 longueur = longueur - vitesse;
                             } else
@@ -652,7 +654,7 @@ std::vector<Pair> *AStar::acceleration2(std::vector<Pair> &vectorPath, std::vect
                             vitesse = vitesse - this->map->acc_max;
                             longueur = longueur - vitesse;
                         }
-                    } else if (longueur >= vitesse - this->map->acc_max and vitesse - this->map->acc_max > 0) {
+                    } else if (longueur >= vitesse - this->map->acc_max and vitesse - this->map->acc_max > 0) { // C'est pour reduire la vitesse si la longueur est plus grand que la vitesse - acceleration max
                         vitesse = vitesse - this->map->acc_max;
                         longueur = longueur - vitesse;
                     } else {
@@ -662,9 +664,8 @@ std::vector<Pair> *AStar::acceleration2(std::vector<Pair> &vectorPath, std::vect
                     deniervect.push_back(vitesse);
                 }
                 deniervect.push_back(vitessedefin);
-                if (deniervect.size() >= 3) {
+                if (deniervect.size() >= 3) {  // C est pour permettre si on peut mettre le reste dans l'avant dernier vitesse si c'est possible sans faire de tête à queue
                     int chif1 = deniervect.at(deniervect.size() - 3);
-
                     if (abs((chif1 + reste) - vitesse) <= this->map->acc_max and
                         abs(vitessedefin - (chif1 + reste)) <= this->map->acc_max) {
                         deniervect.at(deniervect.size() - 2) = deniervect.at(deniervect.size() - 2) + reste;
@@ -674,7 +675,7 @@ std::vector<Pair> *AStar::acceleration2(std::vector<Pair> &vectorPath, std::vect
             }
         }
 
-        if (this->map->acc_max == accel / 2)
+        if (this->map->acc_max == accel / 2) //Si nous sommes dans une diagonale alors la vitesse est le double car on touche sur X et y
             valeurreele = vitessedefin * 2;
         else
             valeurreele = vitessedefin;

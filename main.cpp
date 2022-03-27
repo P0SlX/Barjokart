@@ -38,7 +38,7 @@ int main() {
     // Choix de la fonction d'accélération
     while (true) {
         std::cout << " 1 : Methode d'acceleration avec bresenham" << std::endl;
-        std::cout << " 2 : Methode d'acceleration sans bresenham" << std::endl;
+        std::cout << " 2 : Methode d'acceleration secondaire sans bresenham " << std::endl;
         std::cout << "Choix : ";
         std::cin >> choix;
         if (choix == 1 or choix == 2) {
