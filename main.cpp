@@ -97,7 +97,7 @@ int main() {
         speedVector = AStar::nodesToSpeedVector(path);
     } else if (choix == 2) {
         auto speedVector2 = AStar::nodesToSpeedVector(path);
-        auto cutvector = astar.cutting(*speedVector2);
+        auto cutvector = AStar::cutting(*speedVector2);
         speedVector = astar.acceleration2(*speedVector2, *cutvector);
 
         delete speedVector2;
